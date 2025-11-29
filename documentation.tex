@@ -1,0 +1,735 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+% Code listing style
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+% Header and footer
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{CareerAI Documentation}
+\lhead{Technical Specification}
+\rfoot{Page \thepage}
+
+\title{\textbf{CareerAI Platform} \\ Technical Documentation}
+\author{Umar Mehmood (22I-2617) \\ Faizan Rasheed (22I-2734) \\ Talha Rizwan (22I-2539)}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Executive Summary}
+
+CareerAI is an intelligent web application designed to help students and job seekers navigate their career journey through AI-powered resume analysis, automated job discovery, and personalized interview preparation. The platform leverages modern web technologies and artificial intelligence to provide a comprehensive job search and interview preparation solution.
+
+\subsection{Key Features}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Smart Resume Analysis}: PDF upload with AI-powered extraction of skills, experience, and qualifications
+    \item \textbf{Automated Job Discovery}: Web scraping and API integration to find relevant job opportunities
+    \item \textbf{AI-Powered Job Matching}: Intelligent ranking of jobs based on user profile compatibility
+    \item \textbf{Interview Preparation}: Research-backed, personalized interview questions and study guides
+    \item \textbf{Career Analytics Dashboard}: Visual insights into job search progress and skill gaps
+    \item \textbf{Video Interview Practice}: AI-powered mock interview system
+\end{itemize}
+
+\section{Technology Stack}
+
+\subsection{Frontend Technologies}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Framework}: Next.js 16.0.5 (React 19.2.0)
+    \item \textbf{Language}: TypeScript 5.x
+    \item \textbf{Styling}: Tailwind CSS 4.x with custom animations
+    \item \textbf{UI Components}: 
+        \begin{itemize}
+            \item Radix UI primitives (@radix-ui/react-label, @radix-ui/react-slot)
+            \item Custom component library with shadcn/ui patterns
+            \item Lucide React icons
+        \end{itemize}
+    \item \textbf{3D Graphics}: Three.js with React Three Fiber and Drei
+    \item \textbf{Animations}: 
+        \begin{itemize}
+            \item GSAP (GreenSock Animation Platform)
+            \item Framer Motion
+        \end{itemize}
+    \item \textbf{File Upload}: React Dropzone
+    \item \textbf{Charts}: Recharts for analytics visualization
+\end{itemize}
+
+\subsection{Backend Technologies}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Runtime}: Node.js with Next.js API Routes
+    \item \textbf{Database}: Supabase (PostgreSQL)
+    \item \textbf{Authentication}: Supabase Auth with JWT
+    \item \textbf{Storage}: Supabase Storage for resume PDFs and JSON files
+    \item \textbf{AI Integration}: Google Gemini AI (@google/generative-ai)
+    \item \textbf{PDF Processing}: pdf-parse library
+    \item \textbf{Web Scraping}: 
+        \begin{itemize}
+            \item Cheerio for HTML parsing
+            \item Axios for HTTP requests
+            \item SERP API for Google Jobs integration
+        \end{itemize}
+\end{itemize}
+
+\subsection{Development Tools}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Linting}: ESLint with Next.js configuration
+    \item \textbf{Build Tool}: Next.js built-in bundler
+    \item \textbf{Package Manager}: npm
+    \item \textbf{Version Control}: Git
+\end{itemize}
+
+\section{Database Architecture}
+
+\subsection{Database Schema}
+
+The application uses Supabase (PostgreSQL) with the following tables:
+
+\subsubsection{Profiles Table}
+Extends Supabase auth.users with additional user information.
+\begin{lstlisting}[language=SQL]
+CREATE TABLE profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id),
+  email TEXT NOT NULL,
+  name TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+\end{lstlisting}
+
+\subsubsection{Resumes Table}
+Stores uploaded resume files and AI analysis results.
+\begin{lstlisting}[language=SQL]
+CREATE TABLE resumes (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) UNIQUE,
+  file_name TEXT NOT NULL,
+  file_url TEXT,
+  analysis JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+\end{lstlisting}
+
+\subsubsection{Job Applications Table}
+Tracks discovered jobs and their match scores.
+\begin{lstlisting}[language=SQL]
+CREATE TABLE job_applications (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id),
+  job_title TEXT NOT NULL,
+  company TEXT NOT NULL,
+  location TEXT NOT NULL,
+  salary_range TEXT,
+  match_score INTEGER DEFAULT 0,
+  status TEXT DEFAULT 'saved',
+  applied_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+\end{lstlisting}
+
+\subsubsection{Interview Preps Table}
+Stores AI-generated interview preparation materials.
+\begin{lstlisting}[language=SQL]
+CREATE TABLE interview_preps (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id),
+  company TEXT NOT NULL,
+  role TEXT NOT NULL,
+  technologies TEXT[] NOT NULL DEFAULT '{}',
+  prep_material JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+\end{lstlisting}
+
+\subsection{Row Level Security (RLS)}
+
+All tables implement Row Level Security policies ensuring users can only access their own data:
+\begin{itemize}[leftmargin=*]
+    \item SELECT: Users can view only their own records
+    \item INSERT: Users can create records only for themselves
+    \item UPDATE: Users can modify only their own records
+    \item DELETE: Users can delete only their own records
+\end{itemize}
+
+\subsection{Database Triggers}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Auto Profile Creation}: Automatically creates a profile when a new user signs up
+    \item \textbf{Updated At Timestamp}: Automatically updates the updated\_at field on record modifications
+\end{itemize}
+
+\section{API Endpoints}
+
+\subsection{Authentication APIs}
+\begin{itemize}[leftmargin=*]
+    \item \texttt{POST /api/auth/signup} - User registration
+    \item \texttt{POST /api/auth/login} - User authentication
+    \item \texttt{POST /api/auth/logout} - User logout
+    \item \texttt{GET /api/auth/user} - Get current user
+\end{itemize}
+
+\subsection{Resume APIs}
+\begin{itemize}[leftmargin=*]
+    \item \texttt{POST /api/resume/upload} - Upload and analyze resume PDF
+    \item \texttt{GET /api/resume/upload?userId=<id>} - Retrieve user's resume data
+\end{itemize}
+
+\textbf{Upload Process:}
+\begin{enumerate}
+    \item Validate PDF file (max 10MB)
+    \item Extract text using pdf-parse library
+    \item Clean and structure extracted text
+    \item Analyze with Google Gemini AI
+    \item Upload PDF to Supabase Storage
+    \item Save analysis to database
+    \item Trigger background job discovery
+\end{enumerate}
+
+\subsection{Job Discovery APIs}
+\begin{itemize}[leftmargin=*]
+    \item \texttt{POST /api/jobs/discover} - Search and match jobs
+    \item \texttt{GET /api/jobs/discover?userId=<id>} - Get saved job matches
+\end{itemize}
+
+\textbf{Discovery Process:}
+\begin{enumerate}
+    \item Retrieve user's resume analysis
+    \item Search jobs via SERP API (Google Jobs)
+    \item Filter jobs with valid descriptions
+    \item Match jobs to user profile using AI
+    \item Calculate match scores and reasons
+    \item Save matches to database
+    \item Update user analytics
+\end{enumerate}
+
+\subsection{Interview Preparation APIs}
+\begin{itemize}[leftmargin=*]
+    \item \texttt{POST /api/interview-prep/generate} - Generate interview prep materials
+    \item \texttt{GET /api/interview-prep?userId=<id>} - Get all interview preps
+    \item \texttt{GET /api/interview-prep/<id>} - Get specific interview prep
+\end{itemize}
+
+\subsection{Analytics APIs}
+\begin{itemize}[leftmargin=*]
+    \item \texttt{GET /api/analytics?userId=<id>} - Get user analytics and insights
+    \item \texttt{GET /api/dashboard/stats?userId=<id>} - Get dashboard statistics
+\end{itemize}
+
+\section{Core Features Implementation}
+
+\subsection{Intelligent Resume Analysis}
+
+\subsubsection{PDF Processing}
+The system uses the \texttt{pdf-parse} library to extract text from uploaded PDF resumes:
+
+\begin{lstlisting}[language=JavaScript]
+export async function extractTextFromPDF(buffer: Buffer) {
+  const PDFParse = getPDFParseClass();
+  const parser = new PDFParse({ data: buffer });
+  const result = await parser.getText();
+  return result.text;
+}
+\end{lstlisting}
+
+\subsubsection{Text Cleaning}
+Extracted text is cleaned to remove excessive whitespace and special characters while preserving resume structure:
+\begin{itemize}[leftmargin=*]
+    \item Normalize whitespace and line breaks
+    \item Remove invalid characters
+    \item Preserve important punctuation (@, ., -, etc.)
+    \item Validate minimum content length
+\end{itemize}
+
+\subsubsection{AI Analysis}
+Google Gemini AI analyzes the cleaned text to extract:
+\begin{itemize}[leftmargin=*]
+    \item Technical skills and proficiency levels
+    \item Years of experience
+    \item Education background
+    \item Project experience
+    \item Certifications
+    \item Career level (Entry, Mid, Senior)
+\end{itemize}
+
+\subsection{Automated Job Discovery}
+
+\subsubsection{Job Search Integration}
+The platform integrates with SERP API to access Google Jobs:
+
+\begin{lstlisting}[language=JavaScript]
+export async function searchJobs(
+  skills: string[],
+  location: string = 'Remote',
+  limit: number = 20
+): Promise<Job[]>
+\end{lstlisting}
+
+\textbf{Search Parameters:}
+\begin{itemize}[leftmargin=*]
+    \item Query: Top 3 user skills + location
+    \item Engine: Google Jobs
+    \item Location: Pakistan, Remote, or custom
+    \item Limit: Configurable (default 20)
+\end{itemize}
+
+\subsubsection{Job Filtering}
+Jobs are filtered to ensure quality:
+\begin{itemize}[leftmargin=*]
+    \item Minimum description length (50 characters)
+    \item Valid company and title information
+    \item Relevant technical requirements
+\end{itemize}
+
+\subsubsection{Requirement Extraction}
+The system extracts technical requirements from job descriptions by matching against:
+\begin{itemize}[leftmargin=*]
+    \item Common tech skills database (JavaScript, Python, React, etc.)
+    \item User's specific skills
+    \item Framework and tool mentions
+\end{itemize}
+
+\subsection{AI-Powered Job Matching}
+
+\subsubsection{Match Score Calculation}
+Google Gemini AI analyzes each job against the user profile to generate:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Match Score}: 0-100 percentage indicating compatibility
+    \item \textbf{Match Reasons}: Specific explanations for the score
+    \item \textbf{Skill Alignment}: Which user skills match job requirements
+    \item \textbf{Experience Fit}: Whether experience level is appropriate
+\end{itemize}
+
+\subsubsection{Ranking Algorithm}
+Jobs are sorted by:
+\begin{enumerate}
+    \item Primary: Match score (descending)
+    \item Secondary: Posted date (recent first)
+    \item Tertiary: Salary range (if available)
+\end{enumerate}
+
+\subsection{Interview Preparation System}
+
+\subsubsection{Multi-Step Research Process}
+When a user requests interview prep, the AI:
+\begin{enumerate}
+    \item Searches for current information about the specified technologies
+    \item Identifies trending topics and best practices
+    \item Analyzes common interview patterns for the role
+    \item Filters outdated or irrelevant information
+    \item Generates difficulty-appropriate questions
+\end{enumerate}
+
+\subsubsection{Generated Materials}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Technical Questions}: Technology-specific (e.g., Node.js event loop)
+    \item \textbf{Behavioral Questions}: Role-relevant scenarios
+    \item \textbf{Coding Challenges}: Appropriate to experience level
+    \item \textbf{Study Guide}: Key concepts to review
+    \item \textbf{Company Research}: Specific company insights
+\end{itemize}
+
+\subsection{Video Interview Practice}
+
+The platform includes an AI-powered video interview feature:
+\begin{itemize}[leftmargin=*]
+    \item Real-time video recording
+    \item AI-generated interview questions
+    \item Response analysis and feedback
+    \item Practice session history
+\end{itemize}
+
+\subsection{Analytics Dashboard}
+
+\subsubsection{Tracked Metrics}
+\begin{itemize}[leftmargin=*]
+    \item Total jobs matched
+    \item Applications submitted
+    \item Interview preparations created
+    \item Skill coverage analysis
+    \item Activity timeline
+    \item Weekly progress tracking
+\end{itemize}
+
+\subsubsection{Visualizations}
+\begin{itemize}[leftmargin=*]
+    \item Skill gap analysis charts
+    \item Application status distribution
+    \item Match score trends
+    \item Activity heatmap
+\end{itemize}
+
+\section{User Interface}
+
+\subsection{Pages and Routes}
+
+\subsubsection{Public Pages}
+\begin{itemize}[leftmargin=*]
+    \item \texttt{/} - Landing page with 3D hero, features, testimonials
+    \item \texttt{/login} - User authentication
+    \item \texttt{/signup} - User registration
+    \item \texttt{/confirm-email} - Email verification
+\end{itemize}
+
+\subsubsection{Protected Dashboard Pages}
+\begin{itemize}[leftmargin=*]
+    \item \texttt{/dashboard} - Overview with stats and recent activity
+    \item \texttt{/dashboard/upload-resume} - Resume upload interface
+    \item \texttt{/dashboard/jobs} - Job discovery and matching
+    \item \texttt{/dashboard/interview-prep} - Interview preparation
+    \item \texttt{/dashboard/video-interview} - Video practice sessions
+    \item \texttt{/dashboard/analytics} - Career insights and analytics
+    \item \texttt{/dashboard/settings} - User preferences
+\end{itemize}
+
+\subsection{UI Components}
+
+\subsubsection{Custom Components}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Hero3D}: Three.js animated 3D robot model
+    \item \textbf{DashboardSidebar}: Navigation with active state
+    \item \textbf{AuthForm}: Unified login/signup form
+    \item \textbf{Preloader}: Animated loading screen
+    \item \textbf{Doodles}: Floating shapes and grid patterns
+    \item \textbf{ServicesSection}: Feature showcase
+    \item \textbf{TestimonialsSection}: User testimonials
+    \item \textbf{HowItWorksSection}: Step-by-step guide
+\end{itemize}
+
+\subsubsection{UI Library Components}
+\begin{itemize}[leftmargin=*]
+    \item Button with variants (default, outline, ghost)
+    \item Label for form fields
+    \item Card components for content containers
+    \item Dialog/Modal components
+    \item Toast notifications
+\end{itemize}
+
+\subsection{Design System}
+
+\subsubsection{Color Palette}
+\begin{itemize}[leftmargin=*]
+    \item Primary: Black/White (theme-aware)
+    \item Neutral: Gray scale (100-900)
+    \item Accent: Green for success states
+    \item Background: White (light) / Black (dark)
+\end{itemize}
+
+\subsubsection{Typography}
+\begin{itemize}[leftmargin=*]
+    \item Font: System font stack
+    \item Headings: Light weight (300-400)
+    \item Body: Regular weight (400)
+    \item Code: Monospace font
+\end{itemize}
+
+\subsubsection{Animations}
+\begin{itemize}[leftmargin=*]
+    \item GSAP timeline animations for hero section
+    \item Framer Motion for page transitions
+    \item CSS transitions for hover states
+    \item Scroll-triggered animations
+\end{itemize}
+
+\section{Authentication \& Security}
+
+\subsection{Authentication Flow}
+
+\subsubsection{Sign Up Process}
+\begin{enumerate}
+    \item User submits email, password, and name
+    \item Supabase creates auth user
+    \item Database trigger creates profile record
+    \item Confirmation email sent
+    \item User redirects to email confirmation page
+\end{enumerate}
+
+\subsubsection{Login Process}
+\begin{enumerate}
+    \item User submits credentials
+    \item Supabase validates and issues JWT
+    \item Token stored in HTTP-only cookie
+    \item User redirects to dashboard
+    \item Middleware validates session on protected routes
+\end{enumerate}
+
+\subsection{Security Measures}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Row Level Security}: Database-level access control
+    \item \textbf{JWT Tokens}: Secure session management
+    \item \textbf{HTTP-Only Cookies}: XSS protection
+    \item \textbf{HTTPS}: Encrypted data transmission
+    \item \textbf{Input Validation}: Server-side validation for all inputs
+    \item \textbf{File Upload Limits}: 10MB max for PDFs
+    \item \textbf{CORS Configuration}: Restricted API access
+    \item \textbf{Environment Variables}: Sensitive data protection
+\end{itemize}
+
+\section{Data Flow}
+
+\subsection{Resume Upload Flow}
+\begin{enumerate}
+    \item User uploads PDF via drag-and-drop interface
+    \item Frontend validates file type and size
+    \item File sent to \texttt{/api/resume/upload}
+    \item Server extracts text from PDF
+    \item Text cleaned and structured
+    \item AI analyzes resume content
+    \item PDF uploaded to Supabase Storage
+    \item Analysis saved to database
+    \item Response returned to user immediately
+    \item Background job search initiated
+    \item Jobs matched and saved asynchronously
+\end{enumerate}
+
+\subsection{Job Discovery Flow}
+\begin{enumerate}
+    \item System retrieves user's resume analysis
+    \item Constructs search query from top skills
+    \item Calls SERP API for Google Jobs
+    \item Filters jobs with valid descriptions
+    \item Extracts requirements from descriptions
+    \item AI matches jobs to user profile
+    \item Calculates match scores and reasons
+    \item Saves matches to database
+    \item Updates user analytics
+    \item Returns sorted job list to frontend
+\end{enumerate}
+
+\subsection{Interview Prep Flow}
+\begin{enumerate}
+    \item User inputs company, role, and technologies
+    \item Request sent to \texttt{/api/interview-prep/generate}
+    \item AI performs multi-step research
+    \item Generates personalized questions
+    \item Creates study guide
+    \item Saves prep materials to database
+    \item Returns formatted content to user
+    \item User can download or view online
+\end{enumerate}
+
+\section{External Integrations}
+
+\subsection{Google Gemini AI}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Model}: gemini-pro
+    \item \textbf{Use Cases}:
+        \begin{itemize}
+            \item Resume analysis and skill extraction
+            \item Job matching and scoring
+            \item Interview question generation
+            \item Career advice and insights
+        \end{itemize}
+    \item \textbf{Configuration}: API key stored in environment variables
+\end{itemize}
+
+\subsection{SERP API (Google Jobs)}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Endpoint}: https://serpapi.com/search.json
+    \item \textbf{Engine}: google\_jobs
+    \item \textbf{Parameters}:
+        \begin{itemize}
+            \item Query: Skills + location
+            \item Location: Pakistan, Remote, etc.
+            \item Limit: Number of results
+        \end{itemize}
+    \item \textbf{Fallback}: Mock data generator if API unavailable
+\end{itemize}
+
+\subsection{Supabase Services}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Database}: PostgreSQL with real-time subscriptions
+    \item \textbf{Authentication}: Email/password with JWT
+    \item \textbf{Storage}: Resume PDFs and JSON files
+    \item \textbf{Edge Functions}: Serverless functions (if needed)
+\end{itemize}
+
+\section{Environment Configuration}
+
+\subsection{Required Environment Variables}
+
+\begin{lstlisting}[language=bash]
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://[project].supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=[anon-key]
+
+# Google Gemini AI
+GEMINI_API_KEY=[your-gemini-api-key]
+
+# SERP API (Optional)
+SERP_API_KEY=[your-serp-api-key]
+
+# Application URL
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+\end{lstlisting}
+
+\section{Deployment}
+
+\subsection{Build Process}
+\begin{lstlisting}[language=bash]
+# Install dependencies
+npm install
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
+\end{lstlisting}
+
+\subsection{Deployment Platforms}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Recommended}: Vercel (optimized for Next.js)
+    \item \textbf{Alternatives}: Netlify, AWS Amplify, Railway
+    \item \textbf{Database}: Supabase (managed PostgreSQL)
+\end{itemize}
+
+\subsection{Production Checklist}
+\begin{itemize}[leftmargin=*]
+    \item Set all environment variables
+    \item Configure custom domain
+    \item Enable HTTPS
+    \item Set up database backups
+    \item Configure CORS policies
+    \item Enable error tracking (Sentry, etc.)
+    \item Set up monitoring and analytics
+    \item Test authentication flow
+    \item Verify file upload limits
+    \item Test API rate limits
+\end{itemize}
+
+\section{Performance Optimizations}
+
+\subsection{Frontend Optimizations}
+\begin{itemize}[leftmargin=*]
+    \item Next.js automatic code splitting
+    \item Image optimization with next/image
+    \item Lazy loading for 3D components
+    \item React Server Components where applicable
+    \item Suspense boundaries for async operations
+    \item Preloader for initial page load
+\end{itemize}
+
+\subsection{Backend Optimizations}
+\begin{itemize}[leftmargin=*]
+    \item Background job processing for resume uploads
+    \item Database indexing on frequently queried fields
+    \item Caching for analytics data
+    \item Batch operations for job matching
+    \item Connection pooling for database
+\end{itemize}
+
+\subsection{Database Optimizations}
+\begin{itemize}[leftmargin=*]
+    \item Indexes on user\_id, status, match\_score
+    \item JSONB for flexible data storage
+    \item Efficient RLS policies
+    \item Automatic timestamp updates via triggers
+\end{itemize}
+
+\section{Testing Strategy}
+
+\subsection{Manual Testing Areas}
+\begin{itemize}[leftmargin=*]
+    \item User authentication flow
+    \item Resume upload and analysis
+    \item Job discovery and matching
+    \item Interview prep generation
+    \item Dashboard analytics
+    \item Responsive design across devices
+    \item Dark mode functionality
+\end{itemize}
+
+\subsection{Error Handling}
+\begin{itemize}[leftmargin=*]
+    \item PDF parsing errors (invalid format, encrypted)
+    \item API failures (SERP API, Gemini AI)
+    \item Database connection issues
+    \item File upload errors (size, type)
+    \item Authentication errors
+    \item Network timeouts
+\end{itemize}
+
+\section{Future Enhancements}
+
+\subsection{Planned Features}
+\begin{itemize}[leftmargin=*]
+    \item Real-time job alerts via email/push notifications
+    \item Resume builder and editor
+    \item Cover letter generator
+    \item Salary negotiation insights
+    \item Company culture analysis
+    \item Networking recommendations
+    \item Career path visualization
+    \item Integration with LinkedIn
+    \item Mobile application (React Native)
+\end{itemize}
+
+\subsection{Technical Improvements}
+\begin{itemize}[leftmargin=*]
+    \item Implement comprehensive test suite
+    \item Add end-to-end testing with Playwright
+    \item Set up CI/CD pipeline
+    \item Implement rate limiting
+    \item Add request caching layer
+    \item Optimize AI token usage
+    \item Implement real-time updates with WebSockets
+    \item Add multi-language support
+\end{itemize}
+
+\section{Conclusion}
+
+CareerAI represents a comprehensive solution for modern job seekers, combining cutting-edge AI technology with practical career development tools. The platform's architecture is designed for scalability, security, and user experience, leveraging industry-standard technologies and best practices.
+
+The modular design allows for easy feature additions and maintenance, while the use of managed services (Supabase, Vercel) ensures reliability and reduces operational overhead. The AI-powered features provide genuine value by automating time-consuming tasks and offering personalized insights that would be difficult to obtain manually.
+
+\subsection{Project Statistics}
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Total Dependencies}: 30+ npm packages
+    \item \textbf{Database Tables}: 4 main tables with RLS
+    \item \textbf{API Endpoints}: 15+ REST endpoints
+    \item \textbf{UI Components}: 20+ custom components
+    \item \textbf{Pages}: 10+ routes (public + protected)
+    \item \textbf{AI Integrations}: Google Gemini AI
+    \item \textbf{External APIs}: SERP API for job search
+\end{itemize}
+
+\end{document}
