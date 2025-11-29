@@ -53,8 +53,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
+    // Safety timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      setIsLoading((prev) => {
+        if (prev) {
+          console.warn('Auth initialization timed out, forcing app load');
+          return false;
+        }
+        return prev;
+      });
+    }, 2000);
+
     return () => {
       subscription.unsubscribe();
+      clearTimeout(timeoutId);
     };
   }, []);
 

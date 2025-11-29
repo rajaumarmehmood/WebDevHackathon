@@ -7,7 +7,9 @@ import { Mail, ArrowLeft, CheckCircle, RefreshCw, Loader2 } from 'lucide-react';
 import { GridPattern, FloatingShapes } from '@/components/Doodles';
 import gsap from 'gsap';
 
-export default function ConfirmEmailPage() {
+import { Suspense } from 'react';
+
+function ConfirmEmailPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get('email') || '';
@@ -16,12 +18,12 @@ export default function ConfirmEmailPage() {
   useEffect(() => {
     const ctx = gsap.context(() => {
       gsap.set('.fade-item', { y: 30, opacity: 0 });
-      gsap.to('.fade-item', { 
-        y: 0, 
-        opacity: 1, 
-        duration: 0.7, 
-        stagger: 0.1, 
-        ease: 'power4.out' 
+      gsap.to('.fade-item', {
+        y: 0,
+        opacity: 1,
+        duration: 0.7,
+        stagger: 0.1,
+        ease: 'power4.out'
       });
     }, containerRef);
     return () => ctx.revert();
@@ -32,19 +34,19 @@ export default function ConfirmEmailPage() {
 
   const handleResendEmail = async () => {
     if (!email) return;
-    
+
     setResending(true);
     setResendMessage('');
-    
+
     try {
       const res = await fetch('/api/auth/resend-confirmation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
-      
+
       const data = await res.json();
-      
+
       if (res.ok) {
         setResendMessage('Confirmation email sent! Please check your inbox.');
       } else {
@@ -61,7 +63,7 @@ export default function ConfirmEmailPage() {
     <div ref={containerRef} className="min-h-screen flex items-center justify-center bg-white dark:bg-black relative overflow-hidden px-4">
       <GridPattern />
       <FloatingShapes />
-      
+
       <div className="w-full max-w-md relative z-10">
         <div className="fade-item text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 dark:bg-blue-950 rounded-full mb-6">
@@ -112,7 +114,7 @@ export default function ConfirmEmailPage() {
           >
             Go to Login
           </Button>
-          
+
           <Button
             variant="outline"
             onClick={handleResendEmail}
@@ -126,7 +128,7 @@ export default function ConfirmEmailPage() {
             )}
             Resend confirmation email
           </Button>
-          
+
           {resendMessage && (
             <p className={`text-sm text-center ${resendMessage.includes('sent') ? 'text-green-600' : 'text-red-500'}`}>
               {resendMessage}
@@ -147,8 +149,20 @@ export default function ConfirmEmailPage() {
           Didn&apos;t receive the email? Check your spam folder or try a different email address.
         </p>
       </div>
-      
+
       <div className="noise-overlay" />
     </div>
+  );
+}
+
+export default function ConfirmEmailPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
+        <Loader2 className="w-6 h-6 animate-spin text-black dark:text-white" />
+      </div>
+    }>
+      <ConfirmEmailPageContent />
+    </Suspense>
   );
 }
