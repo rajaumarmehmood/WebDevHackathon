@@ -94,7 +94,7 @@ function ConfirmEmailPageContent() {
             </li>
             <li className="flex items-start gap-3">
               <span className="flex-shrink-0 w-6 h-6 bg-black dark:bg-white text-white dark:text-black rounded-full flex items-center justify-center text-xs font-medium">2</span>
-              <span>Find the email from CareerAI (check spam if needed)</span>
+              <span>Find the email from Navigation (check spam if needed)</span>
             </li>
             <li className="flex items-start gap-3">
               <span className="flex-shrink-0 w-6 h-6 bg-black dark:bg-white text-white dark:text-black rounded-full flex items-center justify-center text-xs font-medium">3</span>

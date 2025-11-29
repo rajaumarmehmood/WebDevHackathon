@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
+import Image from 'next/image';
 
 const services = [
   {
@@ -10,28 +11,32 @@ const services = [
     title: 'Resume Analysis',
     description: 'AI-powered extraction of skills and experience to build your comprehensive profile.',
     tags: ['PDF Parsing', 'Skill Extraction', 'Profile Building', 'ATS Optimization'],
-    color: 'from-blue-500 to-cyan-500'
+    color: 'from-blue-500 to-cyan-500',
+    image: '/service 1.jpg'
   },
   {
     id: '02',
     title: 'Job Discovery',
     description: 'Automated scraping and ranking of relevant job opportunities across the web.',
     tags: ['Web Scraping', 'Relevance Ranking', 'Real-time Updates', 'Smart Filtering'],
-    color: 'from-green-500 to-emerald-500'
+    color: 'from-green-500 to-emerald-500',
+    image: '/service 2.jpg'
   },
   {
     id: '03',
     title: 'Interview Prep',
     description: 'Personalized questions and study guides tailored to specific roles and tech stacks.',
     tags: ['Custom Questions', 'Role-play', 'Technical Guides', 'Behavioral Prep'],
-    color: 'from-purple-500 to-pink-500'
+    color: 'from-purple-500 to-pink-500',
+    image: '/service 3.jpg'
   },
   {
     id: '04',
     title: 'Career Analytics',
     description: 'Track your application progress and identify skill gaps for improvement.',
     tags: ['Application Tracking', 'Skill Gap Analysis', 'Progress Insights', 'Success Metrics'],
-    color: 'from-orange-500 to-red-500'
+    color: 'from-orange-500 to-red-500',
+    image: '/service 4.jpg'
   }
 ];
 
@@ -74,23 +79,26 @@ export default function ServicesSection() {
               </div>
 
               {/* Hover Image Reveal */}
-              <AnimatePresence>
-                {hoveredService === service.id && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
-                    animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                    exit={{ opacity: 0, scale: 0.8, rotate: 5 }}
-                    transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="absolute right-10 top-1/2 -translate-y-1/2 w-80 h-60 rounded-2xl overflow-hidden pointer-events-none z-20 hidden lg:block shadow-2xl"
-                  >
-                    <div className={`w-full h-full bg-gradient-to-br ${service.color} opacity-90 backdrop-blur-xl flex items-center justify-center`}>
-                      <div className="text-white font-bold text-6xl">
-                        {service.id}
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
+                animate={{
+                  opacity: hoveredService === service.id ? 1 : 0,
+                  scale: hoveredService === service.id ? 1 : 0.9,
+                  rotate: hoveredService === service.id ? 0 : -2
+                }}
+                transition={{ duration: 0.25, ease: "circOut" }}
+                className="absolute right-10 top-1/2 -translate-y-1/2 w-80 h-60 rounded-2xl overflow-hidden pointer-events-none z-20 hidden lg:block shadow-2xl"
+              >
+                <div className="relative w-full h-full">
+                  <Image
+                    src={service.image}
+                    alt={service.title}
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                </div>
+              </motion.div>
             </div>
           ))}
           <div className="border-t border-neutral-200 dark:border-neutral-800" />

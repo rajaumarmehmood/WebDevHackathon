@@ -34,10 +34,10 @@ export async function GET(request: NextRequest) {
 
     // Get skills from resume
     const skills = resume?.analysis?.skills || [];
-    
+
     // Calculate skill coverage based on job requirements
     const skillCoverage = skills.map((skill: string) => {
-      const jobsRequiring = jobs.filter((job: any) => 
+      const jobsRequiring = jobs.filter((job: any) =>
         job.tags?.some((tag: string) => tag.toLowerCase().includes(skill.toLowerCase())) ||
         job.requirements?.some((req: string) => req.toLowerCase().includes(skill.toLowerCase()))
       ).length;
@@ -48,12 +48,12 @@ export async function GET(request: NextRequest) {
         target: 100,
         jobsRequiring,
       };
-    }).sort((a, b) => b.jobsRequiring - a.jobsRequiring);
+    }).sort((a: any, b: any) => b.jobsRequiring - a.jobsRequiring);
 
     // Calculate weekly progress (last 4 weeks)
     const weeklyProgress = [];
     const now = new Date();
-    
+
     for (let i = 3; i >= 0; i--) {
       const weekStart = new Date(now);
       weekStart.setDate(now.getDate() - (i * 7 + 7));
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
       });
 
       const weekApplications = weekJobs.filter((job: any) => job.status === 'applied');
-      
+
       const weekInterviews = interviews.filter((prep: any) => {
         const createdAt = new Date(prep.created_at);
         return createdAt >= weekStart && createdAt < weekEnd;

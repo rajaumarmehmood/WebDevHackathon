@@ -1,6 +1,6 @@
 // App Configuration
 export const APP_CONFIG = {
-  name: 'CareerAI',
+  name: 'Navigation',
   description: 'AI-powered job search and interview preparation platform',
   url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
 } as const;

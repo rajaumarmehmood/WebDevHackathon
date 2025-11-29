@@ -14,11 +14,14 @@ export default function Preloader({ onComplete }: { onComplete?: () => void }) {
 
         const ctx = gsap.context(() => {
             const tl = gsap.timeline({
+                defaults: { ease: 'power3.inOut' },
                 onComplete: () => {
-                    setIsComplete(true);
-                    // Unlock scroll
-                    document.body.style.overflow = '';
-                    if (onComplete) onComplete();
+                    // Small delay to ensure animation frame is done before heavy React updates
+                    setTimeout(() => {
+                        setIsComplete(true);
+                        document.body.style.overflow = '';
+                        if (onComplete) onComplete();
+                    }, 100);
                 },
             });
 
@@ -27,28 +30,31 @@ export default function Preloader({ onComplete }: { onComplete?: () => void }) {
 
             tl.to(counter, {
                 value: 100,
-                duration: 2,
-                ease: 'power2.inOut',
+                duration: 1.5,
+                ease: 'expo.out', // Fast start, smooth end
                 onUpdate: () => {
                     if (counterRef.current) {
                         counterRef.current.textContent = Math.round(counter.value).toString();
                     }
                 },
-            });
-
-            // Fade out counter
-            tl.to(counterRef.current, {
-                opacity: 0,
-                duration: 0.5,
-                ease: 'power2.inOut',
-            });
-
-            // Split screen or slide up animation
-            tl.to(containerRef.current, {
-                yPercent: -100,
-                duration: 0.8,
-                ease: 'power3.inOut',
-            });
+            })
+                .to(counterRef.current, {
+                    opacity: 0,
+                    duration: 0.3,
+                    ease: 'power2.in',
+                }, '-=0.2') // Start fading slightly before counter ends
+                .to(containerRef.current, {
+                    yPercent: -100,
+                    duration: 0.8,
+                    ease: 'power4.inOut',
+                    force3D: true, // Hardware acceleration
+                    onStart: () => {
+                        // Hint browser to optimize
+                        if (containerRef.current) {
+                            containerRef.current.style.willChange = 'transform';
+                        }
+                    }
+                }, '-=0.1'); // Overlap with fade out
 
         }, containerRef);
 
@@ -56,7 +62,7 @@ export default function Preloader({ onComplete }: { onComplete?: () => void }) {
             ctx.revert();
             document.body.style.overflow = '';
         };
-    }, []);
+    }, [onComplete]);
 
     if (isComplete) return null;
 
