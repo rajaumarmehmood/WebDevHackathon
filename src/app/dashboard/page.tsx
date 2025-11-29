@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -12,12 +12,43 @@ export default function DashboardPage() {
   const { user, isLoading, logout } = useAuth();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
+  const [stats, setStats] = useState({
+    jobsMatched: 0,
+    applications: 0,
+    interviews: 0,
+    skillScore: 0,
+  });
+  const [loadingStats, setLoadingStats] = useState(true);
 
   useEffect(() => {
     if (!isLoading && !user) {
       router.push('/login');
     }
   }, [user, isLoading, router]);
+
+  useEffect(() => {
+    if (user) {
+      fetchDashboardStats();
+    }
+  }, [user]);
+
+  const fetchDashboardStats = async () => {
+    if (!user) return;
+    
+    setLoadingStats(true);
+    try {
+      const response = await fetch(`/api/dashboard/stats?userId=${user.id}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        setStats(data.stats);
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -48,11 +79,11 @@ export default function DashboardPage() {
     router.push('/login');
   };
 
-  const stats = [
-    { label: 'Jobs Matched', value: '0', change: '+0', icon: Briefcase, color: 'bg-blue-500' },
-    { label: 'Applications', value: '0', change: '+0', icon: FileText, color: 'bg-purple-500' },
-    { label: 'Interviews', value: '0', change: '+0', icon: Target, color: 'bg-green-500' },
-    { label: 'Skill Score', value: '0%', change: '+0%', icon: TrendingUp, color: 'bg-orange-500' },
+  const statsDisplay = [
+    { label: 'Jobs Matched', value: stats.jobsMatched.toString(), change: '+0', icon: Briefcase, color: 'bg-blue-500' },
+    { label: 'Applications', value: stats.applications.toString(), change: '+0', icon: FileText, color: 'bg-purple-500' },
+    { label: 'Interviews', value: stats.interviews.toString(), change: '+0', icon: Target, color: 'bg-green-500' },
+    { label: 'Skill Score', value: `${stats.skillScore}%`, change: '+0%', icon: TrendingUp, color: 'bg-orange-500' },
   ];
 
   return (
@@ -161,7 +192,7 @@ export default function DashboardPage() {
 
           {/* Stats Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {stats.map((stat) => (
+            {statsDisplay.map((stat) => (
               <div key={stat.label} className="card-item p-6 bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl hover-lift">
                 <div className="flex items-start justify-between mb-4">
                   <div className={`w-10 h-10 ${stat.color} rounded-xl flex items-center justify-center`}>
