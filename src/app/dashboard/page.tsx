@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useUserStats, useInterviewPreps, useResume } from '@/lib/supabase/hooks';
 import { Button } from '@/components/ui/button';
 import { LogOut, User, Settings, LayoutGrid, Loader2, Bell, Search, Plus, FileText, Briefcase, Target, TrendingUp, Brain, Upload, Download, ExternalLink, MoreHorizontal, ChevronRight } from 'lucide-react';
 import { GridPattern } from '@/components/Doodles';
@@ -10,6 +11,9 @@ import gsap from 'gsap';
 
 export default function DashboardPage() {
   const { user, isLoading, logout } = useAuth();
+  const { stats: userStats, loading: statsLoading } = useUserStats();
+  const { preps: interviewPreps } = useInterviewPreps();
+  const { resume } = useResume();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState('overview');
@@ -50,10 +54,10 @@ export default function DashboardPage() {
   };
 
   const stats = [
-    { label: 'Jobs Matched', value: '24', change: '+8', icon: Briefcase, color: 'bg-blue-500' },
-    { label: 'Applications', value: '12', change: '+3', icon: FileText, color: 'bg-purple-500' },
-    { label: 'Interviews', value: '5', change: '+2', icon: Target, color: 'bg-green-500' },
-    { label: 'Skill Score', value: '87%', change: '+5%', icon: TrendingUp, color: 'bg-orange-500' },
+    { label: 'Jobs Matched', value: userStats.jobsMatched.toString(), change: '+0', icon: Briefcase, color: 'bg-blue-500' },
+    { label: 'Applications', value: userStats.applications.toString(), change: '+0', icon: FileText, color: 'bg-purple-500' },
+    { label: 'Interview Preps', value: userStats.interviews.toString(), change: '+0', icon: Target, color: 'bg-green-500' },
+    { label: 'Skill Score', value: userStats.skillScore ? `${userStats.skillScore}%` : '0%', change: '+0', icon: TrendingUp, color: 'bg-orange-500' },
   ];
 
   const matchedJobs = [
@@ -86,10 +90,14 @@ export default function DashboardPage() {
     },
   ];
 
-  const interviewPreps = [
-    { role: 'Frontend Developer', company: 'TechCorp', status: 'Ready', questions: 45, lastUpdated: '2 hours ago' },
-    { role: 'Full Stack Engineer', company: 'StartupXYZ', status: 'In Progress', questions: 32, lastUpdated: '1 day ago' },
-  ];
+  // Format interview preps for display
+  const formattedPreps = interviewPreps.slice(0, 2).map((prep: any) => ({
+    role: prep.role,
+    company: prep.company,
+    status: 'Ready',
+    questions: prep.prep_material?.technicalQuestions?.length + prep.prep_material?.behavioralQuestions?.length || 0,
+    lastUpdated: new Date(prep.created_at).toLocaleDateString(),
+  }));
 
   const skillGaps = [
     { skill: 'System Design', current: 65, target: 85 },
@@ -281,8 +289,8 @@ export default function DashboardPage() {
                 <p className="text-sm text-neutral-500">Your preparation materials</p>
               </div>
               <div className="p-6 space-y-4">
-                {interviewPreps.map((prep) => (
-                  <div key={prep.role + prep.company} className="p-4 border border-neutral-200 dark:border-neutral-800 rounded-xl hover-lift cursor-pointer group">
+                {formattedPreps.length > 0 ? formattedPreps.map((prep: any, index: number) => (
+                  <div key={prep.role + prep.company + index} className="p-4 border border-neutral-200 dark:border-neutral-800 rounded-xl hover-lift cursor-pointer group">
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
                         <p className="text-sm font-medium text-black dark:text-white group-hover:underline">{prep.role}</p>
@@ -301,7 +309,9 @@ export default function DashboardPage() {
                       Start Prep
                     </Button>
                   </div>
-                ))}
+                )) : (
+                  <p className="text-sm text-neutral-500 text-center py-4">No interview preps yet</p>
+                )}
                 <Button 
                   className="w-full bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200"
                   onClick={() => router.push('/dashboard/interview-prep')}

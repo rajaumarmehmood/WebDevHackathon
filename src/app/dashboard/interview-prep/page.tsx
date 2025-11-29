@@ -3,15 +3,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useInterviewPreps } from '@/lib/supabase/hooks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Brain, Loader2, Sparkles, Target, BookOpen, Code, MessageSquare, TrendingUp, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Brain, Loader2, Sparkles, Target, BookOpen, Code, MessageSquare, TrendingUp, CheckCircle, ChevronDown, ChevronUp, History } from 'lucide-react';
 import { GridPattern } from '@/components/Doodles';
 import gsap from 'gsap';
 
 export default function InterviewPrepPage() {
   const { user, isLoading } = useAuth();
+  const { preps: savedPreps, savePrep } = useInterviewPreps();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const [step, setStep] = useState(1);
@@ -21,6 +23,7 @@ export default function InterviewPrepPage() {
   const [generating, setGenerating] = useState(false);
   const [prepMaterial, setPrepMaterial] = useState<any>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['technical']));
+  const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -38,6 +41,15 @@ export default function InterviewPrepPage() {
     }
   }, [user]);
 
+  const loadSavedPrep = (prep: any) => {
+    setCompany(prep.company);
+    setRole(prep.role);
+    setTechnologies(prep.technologies.join(', '));
+    setPrepMaterial(prep.prep_material);
+    setStep(3);
+    setShowHistory(false);
+  };
+
   const handleGenerate = async () => {
     setGenerating(true);
     setStep(2);
@@ -45,11 +57,13 @@ export default function InterviewPrepPage() {
     // Simulate AI research and generation
     await new Promise(resolve => setTimeout(resolve, 4000));
     
+    const techArray = technologies.split(',').map(t => t.trim());
+    
     // Mock prep material
-    setPrepMaterial({
+    const generatedMaterial = {
       company,
       role,
-      technologies: technologies.split(',').map(t => t.trim()),
+      technologies: techArray,
       technicalQuestions: [
         {
           question: 'Explain the event loop in Node.js and how it handles asynchronous operations.',
@@ -132,7 +146,12 @@ export default function InterviewPrepPage() {
         interviewProcess: '1. Phone Screen → 2. Technical Assessment → 3. System Design → 4. Cultural Fit',
         tips: ['Emphasize your ability to work in ambiguity', 'Show examples of taking initiative', 'Demonstrate full-stack capabilities']
       }
-    });
+    };
+    
+    setPrepMaterial(generatedMaterial);
+    
+    // Save to Supabase
+    await savePrep(company, role, techArray, generatedMaterial);
     
     setGenerating(false);
     setStep(3);
@@ -198,6 +217,38 @@ export default function InterviewPrepPage() {
                 Get personalized, research-backed interview questions and study guides tailored to your target role
               </p>
             </div>
+
+            {/* Previous Preps */}
+            {savedPreps.length > 0 && (
+              <div className="fade-item max-w-2xl mx-auto">
+                <button
+                  onClick={() => setShowHistory(!showHistory)}
+                  className="w-full p-4 bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-xl flex items-center justify-between hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <History className="w-5 h-5 text-neutral-500" />
+                    <span className="text-sm font-medium text-black dark:text-white">
+                      Previous Prep Sessions ({savedPreps.length})
+                    </span>
+                  </div>
+                  {showHistory ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                </button>
+                {showHistory && (
+                  <div className="mt-2 space-y-2">
+                    {savedPreps.map((prep: any) => (
+                      <button
+                        key={prep.id}
+                        onClick={() => loadSavedPrep(prep)}
+                        className="w-full p-4 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl text-left hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                      >
+                        <p className="font-medium text-black dark:text-white">{prep.role}</p>
+                        <p className="text-sm text-neutral-500">{prep.company} • {new Date(prep.created_at).toLocaleDateString()}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Form */}
             <div className="fade-item max-w-2xl mx-auto">

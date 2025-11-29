@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authenticateUser, generateToken } from '@/lib/auth';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,21 +12,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const user = await authenticateUser(email, password);
+    const supabase = await createClient();
+    
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-    if (!user) {
+    if (error) {
       return NextResponse.json(
-        { error: 'Invalid email or password' },
+        { error: error.message },
         { status: 401 }
       );
     }
 
-    const token = generateToken(user.id, user.email);
+    // Fetch user profile
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id, email, name')
+      .eq('id', data.user.id)
+      .single();
 
     return NextResponse.json({
       message: 'Login successful',
-      user: { id: user.id, email: user.email, name: user.name },
-      token,
+      user: profile || {
+        id: data.user.id,
+        email: data.user.email,
+        name: data.user.user_metadata?.name || data.user.email?.split('@')[0],
+      },
     });
   } catch (error) {
     console.error('Login error:', error);

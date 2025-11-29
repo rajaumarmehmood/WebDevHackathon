@@ -43,14 +43,29 @@ export default function AuthForm({ mode }: AuthFormProps) {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-    const result = mode === 'login' 
-      ? await login(email, password)
-      : await signup(email, name, password);
-    setIsLoading(false);
-    if (result.success) {
-      router.push('/dashboard');
+    
+    if (mode === 'login') {
+      const result = await login(email, password);
+      setIsLoading(false);
+      if (result.success) {
+        router.push('/dashboard');
+      } else {
+        // Check if it's an email confirmation error
+        if (result.error?.toLowerCase().includes('email not confirmed')) {
+          setError('Please confirm your email before logging in. Check your inbox for the confirmation link.');
+        } else {
+          setError(result.error || 'Something went wrong');
+        }
+      }
     } else {
-      setError(result.error || 'Something went wrong');
+      const result = await signup(email, name, password);
+      setIsLoading(false);
+      if (result.success) {
+        // Redirect to confirm email page instead of dashboard
+        router.push(`/confirm-email?email=${encodeURIComponent(email)}`);
+      } else {
+        setError(result.error || 'Something went wrong');
+      }
     }
   };
 

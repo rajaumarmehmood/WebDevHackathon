@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useResume } from '@/lib/supabase/hooks';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Upload, FileText, Loader2, CheckCircle, X, Brain, Sparkles } from 'lucide-react';
 import { GridPattern } from '@/components/Doodles';
@@ -10,6 +11,7 @@ import gsap from 'gsap';
 
 export default function UploadResumePage() {
   const { user, isLoading } = useAuth();
+  const { resume: savedResume, saveResume } = useResume();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -17,6 +19,13 @@ export default function UploadResumePage() {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<any>(null);
   const [dragActive, setDragActive] = useState(false);
+
+  // Load saved resume analysis if exists
+  useEffect(() => {
+    if (savedResume?.analysis) {
+      setAnalysis(savedResume.analysis);
+    }
+  }, [savedResume]);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -76,8 +85,8 @@ export default function UploadResumePage() {
     await new Promise(resolve => setTimeout(resolve, 3000));
     setAnalyzing(false);
     
-    // Mock analysis result
-    setAnalysis({
+    // Mock analysis result (in production, this would come from AI analysis)
+    const analysisResult = {
       name: user?.name || 'John Doe',
       email: user?.email || 'john@example.com',
       skills: ['React', 'TypeScript', 'Node.js', 'Python', 'AWS', 'Docker', 'MongoDB', 'GraphQL'],
@@ -94,7 +103,12 @@ export default function UploadResumePage() {
       ],
       proficiencyLevel: 'Mid-Level',
       yearsOfExperience: 4,
-    });
+    };
+    
+    setAnalysis(analysisResult);
+    
+    // Save to Supabase
+    await saveResume(file.name, null, analysisResult);
   };
 
   if (isLoading) {
