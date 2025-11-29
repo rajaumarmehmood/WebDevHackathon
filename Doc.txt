@@ -1,0 +1,29 @@
+Description:
+An intelligent web app that helps students navigate their job search by auto discovering relevnant opportunities based on theri resume and providing deep;ly personaluzed researched-backed interview prepration for specific technical roles.
+
+CORE REQUIREMENTS:
+
+1- Intelligent Resume Analysis:
+accepts resume upload in pdf format
+Extract and structure the key info skills, experienc, edu, projects
+Build a comprehensive user profile from resume data
+Identify technical expertise areas and proficiency levels
+Store structured resume insights for ongoing use
+
+2- Automated Job Discovery
+Scrape job listing from actual source across internet
+Filter opportunities based on the extracted resume data
+Rank jobs by relevance to user specific expertise and experience level
+Present curated job match with compatibility score explaining why each job fits
+Display key requirementss and alignment with user qualification
+
+4- User Dashboard and Analytics
+
+Visual overbiew of job search progress and discovered opportunities
+Skill covergage analysis shoewing strengths and gaps
+Interview preparation tracking and gistory 
+Clear presentation oof AI-generated insights and recxommendstions
+
+Technical requirements:
+Web scraping functionality for job discovery
+AI integration capable of multi-step reasoning, internet research, and structured data extraction
