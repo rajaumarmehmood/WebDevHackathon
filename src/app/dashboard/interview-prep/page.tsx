@@ -1,0 +1,518 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ArrowLeft, Brain, Loader2, Sparkles, Target, BookOpen, Code, MessageSquare, TrendingUp, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { GridPattern } from '@/components/Doodles';
+import gsap from 'gsap';
+
+export default function InterviewPrepPage() {
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [step, setStep] = useState(1);
+  const [company, setCompany] = useState('');
+  const [role, setRole] = useState('');
+  const [technologies, setTechnologies] = useState('');
+  const [generating, setGenerating] = useState(false);
+  const [prepMaterial, setPrepMaterial] = useState<any>(null);
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['technical']));
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isLoading, router]);
+
+  useEffect(() => {
+    if (user) {
+      const ctx = gsap.context(() => {
+        gsap.set('.fade-item', { y: 30, opacity: 0 });
+        gsap.to('.fade-item', { y: 0, opacity: 1, duration: 0.7, stagger: 0.08, ease: 'power4.out' });
+      }, containerRef);
+      return () => ctx.revert();
+    }
+  }, [user]);
+
+  const handleGenerate = async () => {
+    setGenerating(true);
+    setStep(2);
+    
+    // Simulate AI research and generation
+    await new Promise(resolve => setTimeout(resolve, 4000));
+    
+    // Mock prep material
+    setPrepMaterial({
+      company,
+      role,
+      technologies: technologies.split(',').map(t => t.trim()),
+      technicalQuestions: [
+        {
+          question: 'Explain the event loop in Node.js and how it handles asynchronous operations.',
+          difficulty: 'Medium',
+          category: 'Node.js',
+          hints: ['Think about the call stack', 'Consider callback queue', 'Microtasks vs Macrotasks'],
+          answer: 'The event loop is a mechanism that allows Node.js to perform non-blocking I/O operations...'
+        },
+        {
+          question: 'What are the differences between async/await and Promises? When would you use one over the other?',
+          difficulty: 'Medium',
+          category: 'JavaScript',
+          hints: ['Syntax differences', 'Error handling', 'Readability'],
+          answer: 'Async/await is syntactic sugar built on top of Promises...'
+        },
+        {
+          question: 'How would you optimize a React application for performance?',
+          difficulty: 'Hard',
+          category: 'React',
+          hints: ['Memoization', 'Code splitting', 'Virtual DOM'],
+          answer: 'Key optimization techniques include using React.memo, useMemo, useCallback...'
+        },
+        {
+          question: 'Explain the concept of closures in JavaScript with a practical example.',
+          difficulty: 'Easy',
+          category: 'JavaScript',
+          hints: ['Lexical scope', 'Function returning function', 'Private variables'],
+          answer: 'A closure is a function that has access to variables in its outer scope...'
+        },
+      ],
+      behavioralQuestions: [
+        {
+          question: 'Tell me about a time when you had to debug a complex issue in production.',
+          category: 'Problem Solving',
+          framework: 'STAR',
+          tips: ['Focus on your systematic approach', 'Highlight tools used', 'Emphasize the outcome']
+        },
+        {
+          question: 'Describe a situation where you had to learn a new technology quickly.',
+          category: 'Learning Agility',
+          framework: 'STAR',
+          tips: ['Show your learning process', 'Mention resources used', 'Demonstrate application']
+        },
+        {
+          question: 'How do you handle disagreements with team members about technical decisions?',
+          category: 'Teamwork',
+          framework: 'STAR',
+          tips: ['Show respect for others', 'Data-driven approach', 'Compromise and collaboration']
+        },
+      ],
+      studyGuide: [
+        {
+          topic: 'Node.js Event Loop',
+          priority: 'High',
+          resources: ['Node.js Official Docs', 'Event Loop Visualization', 'Philip Roberts Talk'],
+          timeEstimate: '2 hours'
+        },
+        {
+          topic: 'React Performance Optimization',
+          priority: 'High',
+          resources: ['React Docs - Optimization', 'Web.dev Performance', 'Kent C. Dodds Blog'],
+          timeEstimate: '3 hours'
+        },
+        {
+          topic: 'Async Patterns in JavaScript',
+          priority: 'Medium',
+          resources: ['JavaScript.info', 'MDN Web Docs', 'You Don\'t Know JS'],
+          timeEstimate: '2 hours'
+        },
+        {
+          topic: 'System Design Basics',
+          priority: 'Medium',
+          resources: ['System Design Primer', 'Grokking System Design', 'ByteByteGo'],
+          timeEstimate: '4 hours'
+        },
+      ],
+      companyInsights: {
+        culture: 'Fast-paced startup environment with focus on innovation',
+        techStack: ['Node.js', 'React', 'TypeScript', 'AWS', 'MongoDB'],
+        interviewProcess: '1. Phone Screen → 2. Technical Assessment → 3. System Design → 4. Cultural Fit',
+        tips: ['Emphasize your ability to work in ambiguity', 'Show examples of taking initiative', 'Demonstrate full-stack capabilities']
+      }
+    });
+    
+    setGenerating(false);
+    setStep(3);
+  };
+
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(section)) {
+        newSet.delete(section);
+      } else {
+        newSet.add(section);
+      }
+      return newSet;
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
+        <Loader2 className="w-6 h-6 animate-spin text-black dark:text-white" />
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
+  return (
+    <div ref={containerRef} className="min-h-screen bg-neutral-50 dark:bg-neutral-950 relative">
+      <GridPattern />
+
+      {/* Header */}
+      <header className="sticky top-0 z-30 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 px-6 lg:px-8 py-4">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => router.push('/dashboard')}
+            className="gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Dashboard
+          </Button>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-black dark:bg-white rounded-full flex items-center justify-center">
+              <Brain className="w-4 h-4 text-white dark:text-black" />
+            </div>
+            <span className="text-sm font-medium text-black dark:text-white">CareerAI</span>
+          </div>
+        </div>
+      </header>
+
+      {/* Content */}
+      <div className="max-w-6xl mx-auto px-6 lg:px-8 py-12 space-y-8">
+        {step === 1 && (
+          <>
+            {/* Title */}
+            <div className="fade-item text-center">
+              <h1 className="text-4xl lg:text-5xl font-light tracking-tight text-black dark:text-white mb-4">
+                AI Interview Preparation
+              </h1>
+              <p className="text-lg text-neutral-500 max-w-2xl mx-auto">
+                Get personalized, research-backed interview questions and study guides tailored to your target role
+              </p>
+            </div>
+
+            {/* Form */}
+            <div className="fade-item max-w-2xl mx-auto">
+              <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="company">Company Name</Label>
+                  <Input
+                    id="company"
+                    type="text"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    placeholder="e.g., Google, Microsoft, Startup XYZ"
+                    className="h-12"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="role">Role / Position</Label>
+                  <Input
+                    id="role"
+                    type="text"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    placeholder="e.g., Frontend Developer, Full Stack Engineer"
+                    className="h-12"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="technologies">Key Technologies (comma-separated)</Label>
+                  <Input
+                    id="technologies"
+                    type="text"
+                    value={technologies}
+                    onChange={(e) => setTechnologies(e.target.value)}
+                    placeholder="e.g., React, Node.js, TypeScript, AWS"
+                    className="h-12"
+                  />
+                </div>
+
+                <Button
+                  onClick={handleGenerate}
+                  disabled={!company || !role || !technologies}
+                  className="w-full h-12 bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Generate Prep Material
+                </Button>
+              </div>
+            </div>
+
+            {/* Features */}
+            <div className="fade-item grid grid-cols-1 md:grid-cols-4 gap-4">
+              {[
+                { icon: Code, title: 'Technical Questions', desc: 'Role-specific coding challenges' },
+                { icon: MessageSquare, title: 'Behavioral Prep', desc: 'STAR method examples' },
+                { icon: BookOpen, title: 'Study Guide', desc: 'Curated learning resources' },
+                { icon: Target, title: 'Company Insights', desc: 'Culture and interview tips' },
+              ].map((feature) => (
+                <div key={feature.title} className="p-6 bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-xl text-center">
+                  <div className="inline-flex items-center justify-center w-12 h-12 bg-neutral-100 dark:bg-neutral-900 rounded-xl mb-3">
+                    <feature.icon className="w-6 h-6 text-neutral-600 dark:text-neutral-400" />
+                  </div>
+                  <h3 className="text-sm font-medium text-black dark:text-white mb-1">{feature.title}</h3>
+                  <p className="text-xs text-neutral-500">{feature.desc}</p>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {step === 2 && (
+          <div className="fade-item max-w-2xl mx-auto text-center space-y-8">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-black dark:bg-white rounded-full">
+              <Brain className="w-10 h-10 text-white dark:text-black animate-pulse" />
+            </div>
+            <div>
+              <h2 className="text-3xl font-light text-black dark:text-white mb-4">
+                AI is researching...
+              </h2>
+              <p className="text-neutral-500 mb-8">
+                Analyzing {company} interview patterns, {role} requirements, and {technologies} best practices
+              </p>
+              <div className="space-y-3">
+                {[
+                  'Searching latest interview trends',
+                  'Analyzing technology requirements',
+                  'Identifying common pitfalls',
+                  'Generating personalized questions',
+                  'Curating study resources',
+                ].map((task, i) => (
+                  <div key={task} className="flex items-center justify-center gap-3 text-sm text-neutral-600 dark:text-neutral-400">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>{task}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && prepMaterial && (
+          <div className="fade-item space-y-6">
+            {/* Success Banner */}
+            <div className="p-6 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 rounded-2xl flex items-center gap-4">
+              <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+              <div>
+                <h3 className="text-lg font-medium text-green-900 dark:text-green-100">Prep Material Ready!</h3>
+                <p className="text-sm text-green-700 dark:text-green-300">
+                  Personalized for {prepMaterial.role} at {prepMaterial.company}
+                </p>
+              </div>
+            </div>
+
+            {/* Company Insights */}
+            <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
+              <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
+                <h2 className="text-xl font-medium text-black dark:text-white">Company Insights</h2>
+              </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <p className="text-xs text-neutral-400 uppercase tracking-wider mb-2">Culture</p>
+                  <p className="text-neutral-700 dark:text-neutral-300">{prepMaterial.companyInsights.culture}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-neutral-400 uppercase tracking-wider mb-2">Tech Stack</p>
+                  <div className="flex flex-wrap gap-2">
+                    {prepMaterial.companyInsights.techStack.map((tech: string) => (
+                      <span key={tech} className="px-3 py-1 bg-neutral-100 dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 rounded-full text-sm">
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-neutral-400 uppercase tracking-wider mb-2">Interview Process</p>
+                  <p className="text-neutral-700 dark:text-neutral-300">{prepMaterial.companyInsights.interviewProcess}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-neutral-400 uppercase tracking-wider mb-2">Tips</p>
+                  <ul className="space-y-2">
+                    {prepMaterial.companyInsights.tips.map((tip: string, i: number) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300">
+                        <span className="text-green-500">•</span>
+                        {tip}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Technical Questions */}
+            <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
+              <button
+                onClick={() => toggleSection('technical')}
+                className="w-full p-6 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <Code className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
+                  <h2 className="text-xl font-medium text-black dark:text-white">Technical Questions</h2>
+                  <span className="text-sm text-neutral-500">({prepMaterial.technicalQuestions.length})</span>
+                </div>
+                {expandedSections.has('technical') ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+              </button>
+              {expandedSections.has('technical') && (
+                <div className="p-6 space-y-4">
+                  {prepMaterial.technicalQuestions.map((q: any, i: number) => (
+                    <div key={i} className="p-4 border border-neutral-200 dark:border-neutral-800 rounded-xl space-y-3">
+                      <div className="flex items-start justify-between gap-4">
+                        <p className="font-medium text-black dark:text-white flex-1">{q.question}</p>
+                        <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${
+                          q.difficulty === 'Easy' ? 'bg-green-100 dark:bg-green-950 text-green-600 dark:text-green-400' :
+                          q.difficulty === 'Medium' ? 'bg-yellow-100 dark:bg-yellow-950 text-yellow-600 dark:text-yellow-400' :
+                          'bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400'
+                        }`}>
+                          {q.difficulty}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs px-2 py-1 bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 rounded">
+                          {q.category}
+                        </span>
+                      </div>
+                      <details className="text-sm">
+                        <summary className="cursor-pointer text-neutral-500 hover:text-black dark:hover:text-white">
+                          View hints & answer
+                        </summary>
+                        <div className="mt-3 space-y-2 pl-4 border-l-2 border-neutral-200 dark:border-neutral-800">
+                          <div>
+                            <p className="text-xs text-neutral-400 uppercase tracking-wider mb-1">Hints</p>
+                            <ul className="space-y-1">
+                              {q.hints.map((hint: string, j: number) => (
+                                <li key={j} className="text-neutral-600 dark:text-neutral-400">• {hint}</li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div>
+                            <p className="text-xs text-neutral-400 uppercase tracking-wider mb-1">Answer</p>
+                            <p className="text-neutral-700 dark:text-neutral-300">{q.answer}</p>
+                          </div>
+                        </div>
+                      </details>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Behavioral Questions */}
+            <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
+              <button
+                onClick={() => toggleSection('behavioral')}
+                className="w-full p-6 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <MessageSquare className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
+                  <h2 className="text-xl font-medium text-black dark:text-white">Behavioral Questions</h2>
+                  <span className="text-sm text-neutral-500">({prepMaterial.behavioralQuestions.length})</span>
+                </div>
+                {expandedSections.has('behavioral') ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+              </button>
+              {expandedSections.has('behavioral') && (
+                <div className="p-6 space-y-4">
+                  {prepMaterial.behavioralQuestions.map((q: any, i: number) => (
+                    <div key={i} className="p-4 border border-neutral-200 dark:border-neutral-800 rounded-xl space-y-3">
+                      <p className="font-medium text-black dark:text-white">{q.question}</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs px-2 py-1 bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 rounded">
+                          {q.category}
+                        </span>
+                        <span className="text-xs px-2 py-1 bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 rounded">
+                          {q.framework}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-xs text-neutral-400 uppercase tracking-wider mb-2">Tips</p>
+                        <ul className="space-y-1">
+                          {q.tips.map((tip: string, j: number) => (
+                            <li key={j} className="text-sm text-neutral-600 dark:text-neutral-400">• {tip}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Study Guide */}
+            <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
+              <button
+                onClick={() => toggleSection('study')}
+                className="w-full p-6 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <BookOpen className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
+                  <h2 className="text-xl font-medium text-black dark:text-white">Study Guide</h2>
+                  <span className="text-sm text-neutral-500">({prepMaterial.studyGuide.length} topics)</span>
+                </div>
+                {expandedSections.has('study') ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+              </button>
+              {expandedSections.has('study') && (
+                <div className="p-6 space-y-4">
+                  {prepMaterial.studyGuide.map((item: any, i: number) => (
+                    <div key={i} className="p-4 border border-neutral-200 dark:border-neutral-800 rounded-xl space-y-3">
+                      <div className="flex items-start justify-between gap-4">
+                        <h3 className="font-medium text-black dark:text-white">{item.topic}</h3>
+                        <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${
+                          item.priority === 'High' ? 'bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400' :
+                          'bg-yellow-100 dark:bg-yellow-950 text-yellow-600 dark:text-yellow-400'
+                        }`}>
+                          {item.priority} Priority
+                        </span>
+                      </div>
+                      <p className="text-sm text-neutral-500">Est. Time: {item.timeEstimate}</p>
+                      <div>
+                        <p className="text-xs text-neutral-400 uppercase tracking-wider mb-2">Resources</p>
+                        <ul className="space-y-1">
+                          {item.resources.map((resource: string, j: number) => (
+                            <li key={j} className="text-sm text-neutral-600 dark:text-neutral-400">• {resource}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center justify-center gap-4">
+              <Button
+                onClick={() => router.push('/dashboard')}
+                className="bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200"
+              >
+                Back to Dashboard
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setStep(1);
+                  setPrepMaterial(null);
+                  setCompany('');
+                  setRole('');
+                  setTechnologies('');
+                }}
+              >
+                New Prep Session
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="noise-overlay" />
+    </div>
+  );
+}

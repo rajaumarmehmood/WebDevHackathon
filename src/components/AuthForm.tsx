@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Eye, EyeOff, ArrowRight, Loader2, Sparkles, Shield, Zap, Check } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, Loader2, Brain, FileText, Search, TrendingUp, Check } from 'lucide-react';
 import { FloatingShapes, GridPattern } from '@/components/Doodles';
 import gsap from 'gsap';
 
@@ -55,9 +55,9 @@ export default function AuthForm({ mode }: AuthFormProps) {
   };
 
   const features = [
-    { icon: Shield, label: 'Secure', desc: 'Bank-level encryption' },
-    { icon: Zap, label: 'Fast', desc: 'Instant authentication' },
-    { icon: Sparkles, label: 'Modern', desc: 'Beautiful experience' },
+    { icon: FileText, label: 'Resume AI', desc: 'Smart analysis' },
+    { icon: Search, label: 'Job Match', desc: 'Auto discovery' },
+    { icon: TrendingUp, label: 'Career Boost', desc: 'Interview prep' },
   ];
 
   return (
@@ -72,9 +72,9 @@ export default function AuthForm({ mode }: AuthFormProps) {
           {/* Logo */}
           <div className="anim-item flex items-center gap-3">
             <div className="w-10 h-10 bg-black dark:bg-white rounded-full flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white dark:text-black" />
+              <Brain className="w-5 h-5 text-white dark:text-black" />
             </div>
-            <span className="text-xl font-medium text-black dark:text-white">authflow</span>
+            <span className="text-xl font-medium text-black dark:text-white">CareerAI</span>
           </div>
           
           {/* Main Content */}
@@ -85,9 +85,9 @@ export default function AuthForm({ mode }: AuthFormProps) {
               </p>
               <h1 className="anim-item text-5xl xl:text-6xl font-light tracking-tight text-black dark:text-white leading-[1.1]">
                 {mode === 'login' ? (
-                  <>Your ideas<br />await you</>
+                  <>Your dream<br />job awaits</>
                 ) : (
-                  <>Start building<br />something great</>
+                  <>Start your<br />career journey</>
                 )}
               </h1>
             </div>
@@ -97,8 +97,8 @@ export default function AuthForm({ mode }: AuthFormProps) {
 
             <p className="anim-item text-lg text-neutral-500 max-w-sm leading-relaxed">
               {mode === 'login' 
-                ? 'Sign in to continue your journey and access all your projects.'
-                : 'Create an account to unlock powerful features and join our community.'}
+                ? 'Sign in to access your personalized job matches and interview prep materials.'
+                : 'Create an account to unlock AI-powered job discovery and interview preparation.'}
             </p>
 
             {/* Feature Cards */}
@@ -116,18 +116,18 @@ export default function AuthForm({ mode }: AuthFormProps) {
           {/* Bottom Stats */}
           <div className="anim-item flex items-center gap-8">
             <div>
+              <p className="text-2xl font-light text-black dark:text-white">50K+</p>
+              <p className="text-xs text-neutral-400">Jobs Found</p>
+            </div>
+            <div className="h-8 w-px bg-neutral-200 dark:bg-neutral-800" />
+            <div>
+              <p className="text-2xl font-light text-black dark:text-white">95%</p>
+              <p className="text-xs text-neutral-400">Match Rate</p>
+            </div>
+            <div className="h-8 w-px bg-neutral-200 dark:bg-neutral-800" />
+            <div>
               <p className="text-2xl font-light text-black dark:text-white">10K+</p>
-              <p className="text-xs text-neutral-400">Active Users</p>
-            </div>
-            <div className="h-8 w-px bg-neutral-200 dark:bg-neutral-800" />
-            <div>
-              <p className="text-2xl font-light text-black dark:text-white">99.9%</p>
-              <p className="text-xs text-neutral-400">Uptime</p>
-            </div>
-            <div className="h-8 w-px bg-neutral-200 dark:bg-neutral-800" />
-            <div>
-              <p className="text-2xl font-light text-black dark:text-white">50ms</p>
-              <p className="text-xs text-neutral-400">Response</p>
+              <p className="text-xs text-neutral-400">Students</p>
             </div>
           </div>
         </div>
@@ -140,9 +140,9 @@ export default function AuthForm({ mode }: AuthFormProps) {
           {/* Mobile Logo */}
           <div className="lg:hidden anim-item flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-black dark:bg-white rounded-full flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white dark:text-black" />
+              <Brain className="w-5 h-5 text-white dark:text-black" />
             </div>
-            <span className="text-xl font-medium text-black dark:text-white">authflow</span>
+            <span className="text-xl font-medium text-black dark:text-white">CareerAI</span>
           </div>
 
           <div className="space-y-2">

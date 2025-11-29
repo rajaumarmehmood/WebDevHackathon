@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Settings, LayoutGrid, Loader2, ArrowUpRight, Bell, Search, Plus, Folder, Clock, Star, MoreHorizontal, Sparkles } from 'lucide-react';
+import { LogOut, User, Settings, LayoutGrid, Loader2, Bell, Search, Plus, FileText, Briefcase, Target, TrendingUp, Brain, Upload, Download, ExternalLink, MoreHorizontal, ChevronRight } from 'lucide-react';
 import { GridPattern } from '@/components/Doodles';
 import gsap from 'gsap';
 
@@ -12,6 +12,7 @@ export default function DashboardPage() {
   const { user, isLoading, logout } = useAuth();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -49,26 +50,52 @@ export default function DashboardPage() {
   };
 
   const stats = [
-    { label: 'Total Projects', value: '12', change: '+2', trend: 'up' },
-    { label: 'Active Tasks', value: '48', change: '+12', trend: 'up' },
-    { label: 'Completed', value: '156', change: '+8', trend: 'up' },
-    { label: 'Team Members', value: '8', change: '+1', trend: 'up' },
+    { label: 'Jobs Matched', value: '24', change: '+8', icon: Briefcase, color: 'bg-blue-500' },
+    { label: 'Applications', value: '12', change: '+3', icon: FileText, color: 'bg-purple-500' },
+    { label: 'Interviews', value: '5', change: '+2', icon: Target, color: 'bg-green-500' },
+    { label: 'Skill Score', value: '87%', change: '+5%', icon: TrendingUp, color: 'bg-orange-500' },
   ];
 
-  const recentProjects = [
-    { name: 'E-commerce Platform', status: 'In Progress', updated: '2 hours ago', color: 'bg-blue-500' },
-    { name: 'Mobile App Redesign', status: 'Review', updated: '5 hours ago', color: 'bg-purple-500' },
-    { name: 'API Integration', status: 'Completed', updated: '1 day ago', color: 'bg-green-500' },
-    { name: 'Dashboard Analytics', status: 'In Progress', updated: '2 days ago', color: 'bg-orange-500' },
+  const matchedJobs = [
+    { 
+      title: 'Frontend Developer', 
+      company: 'TechCorp', 
+      location: 'Remote', 
+      match: 95, 
+      salary: '$80k-$120k',
+      posted: '2 days ago',
+      tags: ['React', 'TypeScript', 'Next.js']
+    },
+    { 
+      title: 'Full Stack Engineer', 
+      company: 'StartupXYZ', 
+      location: 'San Francisco', 
+      match: 92, 
+      salary: '$100k-$150k',
+      posted: '1 week ago',
+      tags: ['Node.js', 'React', 'MongoDB']
+    },
+    { 
+      title: 'Software Engineer Intern', 
+      company: 'BigTech Inc', 
+      location: 'New York', 
+      match: 88, 
+      salary: '$40/hr',
+      posted: '3 days ago',
+      tags: ['Python', 'Java', 'AWS']
+    },
   ];
 
-  const activities = [
-    { action: 'Completed task', item: 'User authentication flow', time: '10 min ago' },
-    { action: 'Created project', item: 'Mobile App v2', time: '1 hour ago' },
-    { action: 'Invited member', item: 'sarah@example.com', time: '3 hours ago' },
-    { action: 'Updated settings', item: 'Security preferences', time: '5 hours ago' },
+  const interviewPreps = [
+    { role: 'Frontend Developer', company: 'TechCorp', status: 'Ready', questions: 45, lastUpdated: '2 hours ago' },
+    { role: 'Full Stack Engineer', company: 'StartupXYZ', status: 'In Progress', questions: 32, lastUpdated: '1 day ago' },
   ];
 
+  const skillGaps = [
+    { skill: 'System Design', current: 65, target: 85 },
+    { skill: 'Data Structures', current: 80, target: 90 },
+    { skill: 'React Advanced', current: 75, target: 90 },
+  ];
 
   return (
     <div ref={containerRef} className="min-h-screen bg-neutral-50 dark:bg-neutral-950 relative">
@@ -78,32 +105,32 @@ export default function DashboardPage() {
       <aside className="fixed left-0 top-0 h-full w-64 bg-white dark:bg-black border-r border-neutral-200 dark:border-neutral-800 p-6 hidden lg:flex flex-col z-40">
         <div className="dash-item flex items-center gap-3 mb-8">
           <div className="w-9 h-9 bg-black dark:bg-white rounded-full flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-white dark:text-black" />
+            <Brain className="w-4 h-4 text-white dark:text-black" />
           </div>
-          <span className="text-lg font-medium text-black dark:text-white">authflow</span>
+          <span className="text-lg font-medium text-black dark:text-white">CareerAI</span>
         </div>
 
         <nav className="flex-1 space-y-1">
           {[
-            { icon: LayoutGrid, label: 'Dashboard', active: true },
-            { icon: Folder, label: 'Projects' },
-            { icon: User, label: 'Team' },
-            { icon: Clock, label: 'Activity' },
-            { icon: Star, label: 'Favorites' },
-            { icon: Settings, label: 'Settings' },
+            { icon: LayoutGrid, label: 'Overview', id: 'overview' },
+            { icon: FileText, label: 'Resume', id: 'resume' },
+            { icon: Briefcase, label: 'Job Matches', id: 'jobs' },
+            { icon: Target, label: 'Interview Prep', id: 'prep' },
+            { icon: TrendingUp, label: 'Analytics', id: 'analytics' },
+            { icon: Settings, label: 'Settings', id: 'settings' },
           ].map((item) => (
-            <a
-              key={item.label}
-              href="#"
-              className={`dash-item flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                item.active
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`dash-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                activeTab === item.id
                   ? 'bg-black dark:bg-white text-white dark:text-black'
                   : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-900 hover:text-black dark:hover:text-white'
               }`}
             >
               <item.icon className="w-5 h-5" />
               <span className="text-sm font-medium">{item.label}</span>
-            </a>
+            </button>
           ))}
         </nav>
 
@@ -129,7 +156,7 @@ export default function DashboardPage() {
             {/* Mobile Logo */}
             <div className="lg:hidden flex items-center gap-3">
               <div className="w-9 h-9 bg-black dark:bg-white rounded-full flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-white dark:text-black" />
+                <Brain className="w-4 h-4 text-white dark:text-black" />
               </div>
             </div>
 
@@ -139,7 +166,7 @@ export default function DashboardPage() {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                 <input
                   type="text"
-                  placeholder="Search anything..."
+                  placeholder="Search jobs, companies..."
                   className="w-full h-10 pl-11 pr-4 bg-neutral-100 dark:bg-neutral-900 border-0 rounded-full text-sm focus:ring-2 focus:ring-black dark:focus:ring-white outline-none transition-all"
                 />
               </div>
@@ -147,9 +174,14 @@ export default function DashboardPage() {
 
             {/* Actions */}
             <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" className="hidden sm:flex h-9 rounded-full gap-2">
-                <Plus className="w-4 h-4" />
-                New Project
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="hidden sm:flex h-9 rounded-full gap-2"
+                onClick={() => router.push('/dashboard/upload-resume')}
+              >
+                <Upload className="w-4 h-4" />
+                Upload Resume
               </Button>
               <button className="relative p-2 text-neutral-500 hover:text-black dark:hover:text-white transition-colors">
                 <Bell className="w-5 h-5" />
@@ -162,7 +194,6 @@ export default function DashboardPage() {
           </div>
         </header>
 
-
         {/* Content */}
         <div className="p-6 lg:p-8 space-y-8">
           {/* Welcome */}
@@ -171,6 +202,7 @@ export default function DashboardPage() {
             <h1 className="text-3xl lg:text-4xl font-light tracking-tight text-black dark:text-white">
               Welcome back, {user.name.split(' ')[0]} 👋
             </h1>
+            <p className="text-neutral-500 mt-2">Here&apos;s your job search progress</p>
           </div>
 
           {/* Stats Grid */}
@@ -178,100 +210,163 @@ export default function DashboardPage() {
             {stats.map((stat) => (
               <div key={stat.label} className="card-item p-6 bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl hover-lift">
                 <div className="flex items-start justify-between mb-4">
-                  <span className="text-sm text-neutral-500">{stat.label}</span>
+                  <div className={`w-10 h-10 ${stat.color} rounded-xl flex items-center justify-center`}>
+                    <stat.icon className="w-5 h-5 text-white" />
+                  </div>
                   <span className="text-xs text-green-500 font-mono bg-green-50 dark:bg-green-950 px-2 py-1 rounded-full">
                     {stat.change}
                   </span>
                 </div>
-                <p className="text-3xl font-light text-black dark:text-white">{stat.value}</p>
+                <p className="text-3xl font-light text-black dark:text-white mb-1">{stat.value}</p>
+                <p className="text-sm text-neutral-500">{stat.label}</p>
               </div>
             ))}
           </div>
 
           {/* Main Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Projects */}
+            {/* Matched Jobs */}
             <div className="lg:col-span-2 card-item bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
               <div className="p-6 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-medium text-black dark:text-white">Recent Projects</h2>
-                  <p className="text-sm text-neutral-500">Your latest work</p>
+                  <h2 className="text-lg font-medium text-black dark:text-white">Top Job Matches</h2>
+                  <p className="text-sm text-neutral-500">AI-curated opportunities for you</p>
                 </div>
-                <Button variant="ghost" size="sm" className="text-neutral-500">
-                  View All <ArrowUpRight className="w-4 h-4 ml-1" />
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-neutral-500"
+                  onClick={() => setActiveTab('jobs')}
+                >
+                  View All <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </div>
               <div className="divide-y divide-neutral-200 dark:divide-neutral-800">
-                {recentProjects.map((project) => (
-                  <div key={project.name} className="p-6 flex items-center gap-4 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors cursor-pointer group">
-                    <div className={`w-3 h-3 rounded-full ${project.color}`} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-black dark:text-white group-hover:underline">{project.name}</p>
-                      <p className="text-xs text-neutral-500">{project.updated}</p>
+                {matchedJobs.map((job) => (
+                  <div key={job.title + job.company} className="p-6 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors cursor-pointer group">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="text-base font-medium text-black dark:text-white group-hover:underline mb-1">{job.title}</h3>
+                        <p className="text-sm text-neutral-500">{job.company} • {job.location}</p>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className="text-xs font-mono bg-green-100 dark:bg-green-950 text-green-600 dark:text-green-400 px-3 py-1 rounded-full">
+                          {job.match}% Match
+                        </span>
+                        <button className="opacity-0 group-hover:opacity-100 transition-opacity">
+                          <ExternalLink className="w-4 h-4 text-neutral-400" />
+                        </button>
+                      </div>
                     </div>
-                    <span className={`text-xs px-3 py-1 rounded-full ${
-                      project.status === 'Completed' 
-                        ? 'bg-green-100 dark:bg-green-950 text-green-600 dark:text-green-400'
-                        : project.status === 'Review'
-                        ? 'bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400'
-                        : 'bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400'
-                    }`}>
-                      {project.status}
-                    </span>
-                    <button className="opacity-0 group-hover:opacity-100 transition-opacity">
-                      <MoreHorizontal className="w-5 h-5 text-neutral-400" />
-                    </button>
+                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                      {job.tags.map((tag) => (
+                        <span key={tag} className="text-xs px-2 py-1 bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 rounded">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-neutral-400">
+                      <span>{job.salary}</span>
+                      <span>{job.posted}</span>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
 
-
-            {/* Activity */}
+            {/* Interview Prep */}
             <div className="card-item bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
               <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
-                <h2 className="text-lg font-medium text-black dark:text-white">Recent Activity</h2>
-                <p className="text-sm text-neutral-500">What&apos;s happening</p>
+                <h2 className="text-lg font-medium text-black dark:text-white">Interview Prep</h2>
+                <p className="text-sm text-neutral-500">Your preparation materials</p>
               </div>
-              <div className="p-6 space-y-6">
-                {activities.map((activity, i) => (
-                  <div key={i} className="flex gap-4">
-                    <div className="w-2 h-2 mt-2 rounded-full bg-neutral-300 dark:bg-neutral-700" />
-                    <div>
-                      <p className="text-sm text-black dark:text-white">
-                        {activity.action} <span className="text-neutral-500">{activity.item}</span>
-                      </p>
-                      <p className="text-xs text-neutral-400 mt-1">{activity.time}</p>
+              <div className="p-6 space-y-4">
+                {interviewPreps.map((prep) => (
+                  <div key={prep.role + prep.company} className="p-4 border border-neutral-200 dark:border-neutral-800 rounded-xl hover-lift cursor-pointer group">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-black dark:text-white group-hover:underline">{prep.role}</p>
+                        <p className="text-xs text-neutral-500">{prep.company}</p>
+                      </div>
+                      <span className={`text-xs px-2 py-1 rounded-full ${
+                        prep.status === 'Ready' 
+                          ? 'bg-green-100 dark:bg-green-950 text-green-600 dark:text-green-400'
+                          : 'bg-yellow-100 dark:bg-yellow-950 text-yellow-600 dark:text-yellow-400'
+                      }`}>
+                        {prep.status}
+                      </span>
                     </div>
+                    <p className="text-xs text-neutral-400 mb-2">{prep.questions} questions • {prep.lastUpdated}</p>
+                    <Button size="sm" variant="outline" className="w-full text-xs h-8">
+                      Start Prep
+                    </Button>
                   </div>
                 ))}
+                <Button 
+                  className="w-full bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200"
+                  onClick={() => router.push('/dashboard/interview-prep')}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Prep Session
+                </Button>
               </div>
             </div>
           </div>
 
-          {/* Account Card */}
+          {/* Skill Gaps */}
           <div className="card-item bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
-            <div className="p-6 border-b border-neutral-200 dark:border-neutral-800 flex items-center gap-3">
-              <User className="w-5 h-5 text-neutral-400" />
-              <h2 className="text-lg font-medium text-black dark:text-white">Account Information</h2>
+            <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
+              <h2 className="text-lg font-medium text-black dark:text-white">Skill Gap Analysis</h2>
+              <p className="text-sm text-neutral-500">Areas to focus on for your target roles</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
-              <div className="p-4 bg-neutral-50 dark:bg-neutral-900 rounded-xl">
-                <p className="text-xs text-neutral-400 uppercase tracking-wider mb-1">Full Name</p>
-                <p className="text-black dark:text-white font-medium">{user.name}</p>
-              </div>
-              <div className="p-4 bg-neutral-50 dark:bg-neutral-900 rounded-xl">
-                <p className="text-xs text-neutral-400 uppercase tracking-wider mb-1">Email</p>
-                <p className="text-black dark:text-white font-medium">{user.email}</p>
-              </div>
-              <div className="p-4 bg-neutral-50 dark:bg-neutral-900 rounded-xl">
-                <p className="text-xs text-neutral-400 uppercase tracking-wider mb-1">Status</p>
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 bg-green-500 rounded-full" />
-                  <p className="text-green-600 dark:text-green-400 font-medium">Active</p>
+            <div className="p-6 space-y-6">
+              {skillGaps.map((skill) => (
+                <div key={skill.skill}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-black dark:text-white">{skill.skill}</span>
+                    <span className="text-xs text-neutral-500">{skill.current}% / {skill.target}%</span>
+                  </div>
+                  <div className="relative h-2 bg-neutral-100 dark:bg-neutral-900 rounded-full overflow-hidden">
+                    <div 
+                      className="absolute left-0 top-0 h-full bg-black dark:bg-white rounded-full transition-all"
+                      style={{ width: `${skill.current}%` }}
+                    />
+                    <div 
+                      className="absolute top-0 h-full w-px bg-green-500"
+                      style={{ left: `${skill.target}%` }}
+                    />
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button 
+              onClick={() => router.push('/dashboard/upload-resume')}
+              className="card-item p-6 bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl hover-lift text-left group"
+            >
+              <Upload className="w-8 h-8 text-neutral-400 group-hover:text-black dark:group-hover:text-white transition-colors mb-3" />
+              <h3 className="text-base font-medium text-black dark:text-white mb-1">Upload Resume</h3>
+              <p className="text-sm text-neutral-500">Update your profile with latest resume</p>
+            </button>
+            <button 
+              onClick={() => setActiveTab('jobs')}
+              className="card-item p-6 bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl hover-lift text-left group"
+            >
+              <Search className="w-8 h-8 text-neutral-400 group-hover:text-black dark:group-hover:text-white transition-colors mb-3" />
+              <h3 className="text-base font-medium text-black dark:text-white mb-1">Discover Jobs</h3>
+              <p className="text-sm text-neutral-500">Browse AI-matched opportunities</p>
+            </button>
+            <button 
+              onClick={() => router.push('/dashboard/interview-prep')}
+              className="card-item p-6 bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl hover-lift text-left group"
+            >
+              <Target className="w-8 h-8 text-neutral-400 group-hover:text-black dark:group-hover:text-white transition-colors mb-3" />
+              <h3 className="text-base font-medium text-black dark:text-white mb-1">Prep Interview</h3>
+              <p className="text-sm text-neutral-500">Get personalized practice questions</p>
+            </button>
           </div>
         </div>
       </main>

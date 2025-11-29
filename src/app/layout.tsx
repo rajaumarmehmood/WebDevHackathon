@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AuthApp - Modern Authentication",
-  description: "Secure and beautiful authentication for your application",
+  title: "CareerAI - Intelligent Job Search & Interview Prep",
+  description: "AI-powered platform that discovers relevant job opportunities and provides personalized interview preparation",
 };
 
 export default function RootLayout({

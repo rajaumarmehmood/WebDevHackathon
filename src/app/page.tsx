@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, ArrowUpRight, Loader2, Sparkles, Shield, Zap, Users, Star, Check } from 'lucide-react';
+import { ArrowRight, Loader2, Sparkles, FileText, Search, Brain, TrendingUp, Target, Zap, Check } from 'lucide-react';
 import { FloatingShapes, GridPattern, MarqueeText } from '@/components/Doodles';
 import gsap from 'gsap';
 
@@ -44,23 +44,23 @@ export default function HomePage() {
   }
 
   const stats = [
-    { value: '10K+', label: 'Active Users' },
-    { value: '99.9%', label: 'Uptime' },
-    { value: '50ms', label: 'Avg Response' },
-    { value: '24/7', label: 'Support' },
+    { value: '50K+', label: 'Jobs Discovered' },
+    { value: '95%', label: 'Match Accuracy' },
+    { value: '10K+', label: 'Students Helped' },
+    { value: '500+', label: 'Companies' },
   ];
 
   const features = [
-    { icon: Shield, title: 'Enterprise Security', desc: 'Bank-level encryption with JWT tokens and bcrypt password hashing for maximum protection.' },
-    { icon: Zap, title: 'Lightning Fast', desc: 'Optimized authentication flow with instant responses and seamless user experience.' },
-    { icon: Users, title: 'Team Ready', desc: 'Built for collaboration with role-based access control and team management.' },
-    { icon: Star, title: 'Developer First', desc: 'Clean APIs, comprehensive docs, and easy integration with any tech stack.' },
+    { icon: FileText, title: 'Smart Resume Analysis', desc: 'Upload your resume and let AI extract skills, experience, and build your comprehensive profile automatically.' },
+    { icon: Search, title: 'Auto Job Discovery', desc: 'AI scrapes and filters thousands of jobs across the internet, ranking them by relevance to your unique profile.' },
+    { icon: Brain, title: 'AI Interview Prep', desc: 'Get personalized, research-backed interview questions and study guides tailored to specific roles and technologies.' },
+    { icon: TrendingUp, title: 'Career Analytics', desc: 'Track your job search progress, identify skill gaps, and get actionable insights to improve your chances.' },
   ];
 
   const testimonials = [
-    { name: 'Sarah Chen', role: 'CTO at TechFlow', text: 'The cleanest auth system we have ever used. Setup took minutes.' },
-    { name: 'Marcus Johnson', role: 'Lead Dev at Startup', text: 'Finally, authentication that just works. Beautiful and secure.' },
-    { name: 'Emily Park', role: 'Founder at AppLab', text: 'Our users love the seamless login experience. Highly recommend!' },
+    { name: 'Alex Kumar', role: 'CS Student, MIT', text: 'Found my dream internship in 2 weeks. The interview prep was spot-on!' },
+    { name: 'Sarah Chen', role: 'New Grad, Stanford', text: 'The AI understood my skills better than I did. Got 3 offers!' },
+    { name: 'Marcus Johnson', role: 'Bootcamp Grad', text: 'This platform made job hunting actually enjoyable. Highly recommend!' },
   ];
 
 
@@ -74,9 +74,9 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4 flex items-center justify-between">
           <div className="fade-up flex items-center gap-3">
             <div className="w-9 h-9 bg-black dark:bg-white rounded-full flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white dark:text-black" />
+              <Brain className="w-4 h-4 text-white dark:text-black" />
             </div>
-            <span className="text-lg font-medium text-black dark:text-white">authflow</span>
+            <span className="text-lg font-medium text-black dark:text-white">CareerAI</span>
           </div>
           <div className="fade-up hidden md:flex items-center gap-8">
             {['Features', 'Pricing', 'Docs', 'Blog'].map((item) => (
@@ -103,23 +103,23 @@ export default function HomePage() {
             {/* Badge */}
             <div className="fade-up inline-flex items-center gap-2 px-4 py-2 bg-neutral-100 dark:bg-neutral-900 rounded-full text-sm mb-8">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-neutral-600 dark:text-neutral-400">Now with 2FA support</span>
+              <span className="text-neutral-600 dark:text-neutral-400">AI-Powered Job Discovery</span>
               <ArrowRight className="w-3 h-3 text-neutral-400" />
             </div>
 
             {/* Hero Text */}
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-light tracking-tight leading-[0.95] mb-8" style={{ perspective: '1000px' }}>
-              <span className="hero-word inline-block text-black dark:text-white">Authentication</span><br />
-              <span className="hero-word inline-block text-black dark:text-white">that</span>{' '}
-              <span className="hero-word inline-block text-neutral-400">developers</span><br />
-              <span className="hero-word inline-block text-neutral-400">actually</span>{' '}
-              <span className="hero-word inline-block text-black dark:text-white">love.</span>
+              <span className="hero-word inline-block text-black dark:text-white">Land your</span><br />
+              <span className="hero-word inline-block text-black dark:text-white">dream</span>{' '}
+              <span className="hero-word inline-block text-neutral-400">tech</span><br />
+              <span className="hero-word inline-block text-neutral-400">job with</span>{' '}
+              <span className="hero-word inline-block text-black dark:text-white">AI.</span>
             </h1>
 
             <div className="line-grow h-px bg-gradient-to-r from-black via-neutral-400 to-transparent dark:from-white dark:via-neutral-600 w-64 mb-8" />
 
             <p className="fade-up text-xl text-neutral-500 max-w-xl leading-relaxed mb-10">
-              Beautiful, secure, and blazingly fast authentication. Set up in minutes, scale to millions. No compromises.
+              Upload your resume, discover perfectly matched jobs, and ace interviews with AI-powered personalized prep. Your career journey, simplified.
             </p>
 
             {/* CTA Buttons */}
@@ -159,7 +159,7 @@ export default function HomePage() {
       {/* Marquee */}
       <div className="py-8 border-y border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50">
         <MarqueeText 
-          text="✦ Secure Authentication ✦ JWT Tokens ✦ OAuth 2.0 ✦ Two-Factor Auth ✦ Role Management ✦ Session Control" 
+          text="✦ Resume Analysis ✦ Job Discovery ✦ AI Interview Prep ✦ Career Analytics ✦ Skill Matching ✦ Personalized Questions" 
           className="text-sm text-neutral-400 font-mono"
         />
       </div>
@@ -170,10 +170,10 @@ export default function HomePage() {
           <div className="text-center mb-16">
             <p className="fade-up text-sm font-mono tracking-widest text-neutral-400 uppercase mb-4">Features</p>
             <h2 className="fade-up text-4xl lg:text-5xl font-light tracking-tight text-black dark:text-white mb-4">
-              Everything you need
+              Your AI career assistant
             </h2>
             <p className="fade-up text-lg text-neutral-500 max-w-xl mx-auto">
-              Built with modern best practices and designed for developer happiness.
+              From resume upload to job offer. We handle the heavy lifting so you can focus on what matters.
             </p>
           </div>
 
@@ -203,12 +203,12 @@ export default function HomePage() {
 
 
       {/* Testimonials */}
-      <section className="py-32 px-6 lg:px-8 bg-neutral-50 dark:bg-neutral-900/30">
+      <section className="py-32 px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <p className="fade-up text-sm font-mono tracking-widest text-neutral-400 uppercase mb-4">Testimonials</p>
             <h2 className="fade-up text-4xl lg:text-5xl font-light tracking-tight text-black dark:text-white">
-              Loved by developers
+              Success stories
             </h2>
           </div>
 
@@ -217,7 +217,7 @@ export default function HomePage() {
               <div key={t.name} className="scale-in p-8 bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl hover-lift">
                 <div className="flex gap-1 mb-4">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-black dark:fill-white text-black dark:text-white" />
+                    <Target key={i} className="w-4 h-4 fill-black dark:fill-white text-black dark:text-white" />
                   ))}
                 </div>
                 <p className="text-neutral-600 dark:text-neutral-400 mb-6 leading-relaxed">&ldquo;{t.text}&rdquo;</p>
@@ -234,48 +234,33 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Pricing Preview */}
-      <section className="py-32 px-6 lg:px-8">
+      {/* How It Works */}
+      <section className="py-32 px-6 lg:px-8 bg-neutral-50 dark:bg-neutral-900/30">
         <div className="max-w-7xl mx-auto">
-          <div className="max-w-3xl mx-auto text-center">
-            <p className="fade-up text-sm font-mono tracking-widest text-neutral-400 uppercase mb-4">Pricing</p>
+          <div className="text-center mb-16">
+            <p className="fade-up text-sm font-mono tracking-widest text-neutral-400 uppercase mb-4">How It Works</p>
             <h2 className="fade-up text-4xl lg:text-5xl font-light tracking-tight text-black dark:text-white mb-4">
-              Start free, scale as you grow
+              Three simple steps
             </h2>
-            <p className="fade-up text-lg text-neutral-500 mb-12">
-              No credit card required. Upgrade when you are ready.
+            <p className="fade-up text-lg text-neutral-500 max-w-xl mx-auto">
+              From resume to interview prep in minutes
             </p>
+          </div>
 
-            <div className="scale-in inline-flex flex-col sm:flex-row gap-6 p-2 bg-neutral-100 dark:bg-neutral-900 rounded-2xl">
-              <div className="p-8 bg-white dark:bg-black rounded-xl text-left min-w-[280px]">
-                <p className="text-sm text-neutral-400 mb-2">Free</p>
-                <p className="text-4xl font-light text-black dark:text-white mb-4">$0<span className="text-lg text-neutral-400">/mo</span></p>
-                <ul className="space-y-3 mb-6">
-                  {['1,000 MAU', 'Basic auth', 'Email support'].map((item) => (
-                    <li key={item} className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
-                      <Check className="w-4 h-4 text-green-500" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                <Button variant="outline" className="w-full rounded-lg">Get Started</Button>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { step: '01', title: 'Upload Resume', desc: 'Drop your PDF resume and let AI analyze your skills, experience, and expertise areas.' },
+              { step: '02', title: 'Discover Jobs', desc: 'AI automatically finds and ranks relevant opportunities from across the internet.' },
+              { step: '03', title: 'Prep & Apply', desc: 'Get personalized interview questions and study guides for each role you target.' },
+            ].map((item) => (
+              <div key={item.step} className="scale-in text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-black dark:bg-white text-white dark:text-black rounded-full text-2xl font-light mb-6">
+                  {item.step}
+                </div>
+                <h3 className="text-xl font-medium text-black dark:text-white mb-3">{item.title}</h3>
+                <p className="text-neutral-500 leading-relaxed">{item.desc}</p>
               </div>
-              <div className="p-8 bg-black dark:bg-white rounded-xl text-left min-w-[280px]">
-                <p className="text-sm text-neutral-400 dark:text-neutral-600 mb-2">Pro</p>
-                <p className="text-4xl font-light text-white dark:text-black mb-4">$29<span className="text-lg text-neutral-500 dark:text-neutral-400">/mo</span></p>
-                <ul className="space-y-3 mb-6">
-                  {['Unlimited MAU', 'Advanced auth', 'Priority support', '2FA & SSO'].map((item) => (
-                    <li key={item} className="flex items-center gap-2 text-sm text-neutral-300 dark:text-neutral-600">
-                      <Check className="w-4 h-4 text-green-400" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                <Button className="w-full bg-white dark:bg-black text-black dark:text-white hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-lg">
-                  Start Trial
-                </Button>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -295,24 +280,24 @@ export default function HomePage() {
 
             <div className="relative z-10 text-center">
               <h2 className="text-4xl lg:text-6xl font-light tracking-tight text-white dark:text-black mb-6">
-                Ready to get started?
+                Ready to land your dream job?
               </h2>
               <p className="text-lg text-neutral-400 dark:text-neutral-600 mb-10 max-w-xl mx-auto">
-                Join thousands of developers building secure applications with authflow.
+                Join thousands of students who found their perfect role with AI-powered career guidance.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button 
                   onClick={() => router.push('/signup')}
                   className="h-14 px-10 bg-white dark:bg-black text-black dark:text-white hover:bg-neutral-200 dark:hover:bg-neutral-800 rounded-full text-base font-medium group"
                 >
-                  Create Free Account
+                  Start Your Journey
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
                 <Button 
                   variant="outline"
                   className="h-14 px-10 border-white/30 dark:border-black/30 text-white dark:text-black hover:bg-white/10 dark:hover:bg-black/10 rounded-full text-base font-medium"
                 >
-                  Contact Sales
+                  View Demo
                 </Button>
               </div>
             </div>
@@ -327,12 +312,12 @@ export default function HomePage() {
             <div className="col-span-2">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-9 h-9 bg-black dark:bg-white rounded-full flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-white dark:text-black" />
+                  <Brain className="w-4 h-4 text-white dark:text-black" />
                 </div>
-                <span className="text-lg font-medium text-black dark:text-white">authflow</span>
+                <span className="text-lg font-medium text-black dark:text-white">CareerAI</span>
               </div>
               <p className="text-sm text-neutral-500 max-w-xs">
-                Beautiful authentication for modern applications. Secure, fast, and developer-friendly.
+                AI-powered job search and interview preparation platform. Smart, personalized, and effective.
               </p>
             </div>
             {[
@@ -355,7 +340,7 @@ export default function HomePage() {
             ))}
           </div>
           <div className="pt-8 border-t border-neutral-200 dark:border-neutral-800 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-neutral-400">© 2025 authflow. All rights reserved.</p>
+            <p className="text-sm text-neutral-400">© 2025 CareerAI. All rights reserved.</p>
             <div className="flex items-center gap-6">
               {['Twitter', 'GitHub', 'Discord'].map((social) => (
                 <a key={social} href="#" className="text-sm text-neutral-400 hover:text-black dark:hover:text-white transition-colors">
