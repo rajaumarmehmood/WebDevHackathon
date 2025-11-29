@@ -17,6 +17,20 @@ Rank jobs by relevance to user specific expertise and experience level
 Present curated job match with compatibility score explaining why each job fits
 Display key requirementss and alignment with user qualification
 
+3.Deep reasearch powered interview preperation
+
+Accept user input for upcoming interview (company name, role key technologies)
+perform multi step AI research process 
+   1 search the internet for current relevatnt information about the specified technolgy/role
+   2 identify trending topics, common pitfallls and best practices
+   3 analyze what amtters most for that specific technical area
+   4 filter out outdated or irrelevant information
+Generate commprehensive interview prepeeartion materials 
+   Technology specific questions (node js,  event loop,async pattenrn) 
+   behavioural question relevant to the role 
+   Difficulty appropriate question based on user experiance level
+   study guide key concept to review 
+
 4- User Dashboard and Analytics
 
 Visual overbiew of job search progress and discovered opportunities
@@ -27,3 +41,5 @@ Clear presentation oof AI-generated insights and recxommendstions
 Technical requirements:
 Web scraping functionality for job discovery
 AI integration capable of multi-step reasoning, internet research, and structured data extraction
+
+
