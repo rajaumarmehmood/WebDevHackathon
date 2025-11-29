@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Search, Filter, ExternalLink, Briefcase, MapPin, DollarSign, Clock, RefreshCw, Brain, GraduationCap, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Loader2, Search, Filter, ExternalLink, Briefcase, MapPin, DollarSign, Clock, RefreshCw, Brain, GraduationCap, ChevronDown, ChevronUp, FileText } from 'lucide-react';
 import { GridPattern } from '@/components/Doodles';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import { JobMatch } from '@/lib/types';
@@ -22,6 +22,7 @@ export default function JobsPage() {
   const [filterType, setFilterType] = useState<string>('all');
   const [locationFilter, setLocationFilter] = useState<string>('all');
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set());
+  const [generatingResume, setGeneratingResume] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -158,6 +159,47 @@ export default function JobsPage() {
       technologies: technologies,
     });
     router.push(`/dashboard/interview-prep?${queryParams.toString()}`);
+  };
+
+  const handleGenerateResume = async (job: JobMatch) => {
+    if (!user) return;
+    
+    setGeneratingResume(job.id);
+    
+    try {
+      const response = await fetch('/api/resume/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          jobTitle: job.job.title,
+          jobDescription: job.job.description,
+          jobRequirements: job.job.requirements || [],
+          jobTags: job.job.tags || [],
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to generate resume');
+      }
+
+      // Download the PDF
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Resume_${job.job.title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error: any) {
+      console.error('Error generating resume:', error);
+      alert(error.message || 'Failed to generate resume');
+    } finally {
+      setGeneratingResume(null);
+    }
   };
 
   const filteredJobs = jobs.filter(job => {
@@ -384,7 +426,26 @@ export default function JobsPage() {
                       </span>
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      onClick={() => handleGenerateResume(match)}
+                      disabled={generatingResume === match.id}
+                    >
+                      {generatingResume === match.id ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <FileText className="w-4 h-4" />
+                          Generate Resume
+                        </>
+                      )}
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"

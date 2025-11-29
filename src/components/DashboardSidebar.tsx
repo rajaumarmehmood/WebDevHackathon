@@ -20,7 +20,7 @@ export default function DashboardSidebar({ user }: DashboardSidebarProps) {
     { icon: Briefcase, label: 'Job Matches', href: '/dashboard/jobs' },
     { icon: Target, label: 'Interview Prep', href: '/dashboard/interview-prep' },
     { icon: TrendingUp, label: 'Analytics', href: '/dashboard/analytics' },
-    { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
+    // { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
   ];
 
   return (

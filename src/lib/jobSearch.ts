@@ -48,43 +48,49 @@ export async function searchJobs(
       return generateJobListings(skills, location, limit);
     }
 
-    const jobs: Job[] = response.data.jobs_results.map((job: any, index: number) => {
-      // Parse salary if available
-      let salary = 'Not specified';
-      if (job.detected_extensions?.salary) {
-        salary = job.detected_extensions.salary;
-      } else if (job.salary) {
-        salary = job.salary;
-      }
+    const jobs: Job[] = response.data.jobs_results
+      .filter((job: any) => {
+        // Filter out jobs without description or with very short descriptions
+        const description = job.description || '';
+        return description.trim().length >= 50; // At least 50 characters
+      })
+      .map((job: any, index: number) => {
+        // Parse salary if available
+        let salary = 'Not specified';
+        if (job.detected_extensions?.salary) {
+          salary = job.detected_extensions.salary;
+        } else if (job.salary) {
+          salary = job.salary;
+        }
 
-      // Parse job type
-      let jobType = 'Full-time';
-      if (job.detected_extensions?.schedule_type) {
-        jobType = job.detected_extensions.schedule_type;
-      }
+        // Parse job type
+        let jobType = 'Full-time';
+        if (job.detected_extensions?.schedule_type) {
+          jobType = job.detected_extensions.schedule_type;
+        }
 
-      // Extract requirements from description
-      const requirements = extractRequirements(job.description || '', skills);
+        // Extract requirements from description
+        const requirements = extractRequirements(job.description, skills);
 
-      return {
-        id: job.job_id || `serp-job-${Date.now()}-${index}`,
-        title: job.title || 'Untitled Position',
-        company: job.company_name || 'Unknown Company',
-        location: job.location || location,
-        description: job.description || 'No description available',
-        requirements,
-        salary,
-        type: jobType,
-        posted: job.detected_extensions?.posted_at 
-          ? parsePostedDate(job.detected_extensions.posted_at)
-          : new Date(),
-        url: job.share_link || job.apply_link || `https://www.google.com/search?q=${encodeURIComponent(job.title + ' ' + job.company_name)}`,
-        source: 'Google Jobs (SERP API)',
-        tags: requirements.slice(0, 5),
-      };
-    });
+        return {
+          id: job.job_id || `serp-job-${Date.now()}-${index}`,
+          title: job.title || 'Untitled Position',
+          company: job.company_name || 'Unknown Company',
+          location: job.location || location,
+          description: job.description.trim(),
+          requirements,
+          salary,
+          type: jobType,
+          posted: job.detected_extensions?.posted_at 
+            ? parsePostedDate(job.detected_extensions.posted_at)
+            : new Date(),
+          url: job.share_link || job.apply_link || `https://www.google.com/search?q=${encodeURIComponent(job.title + ' ' + job.company_name)}`,
+          source: 'Google Jobs (SERP API)',
+          tags: requirements.slice(0, 5),
+        };
+      });
 
-    console.log(`Found ${jobs.length} jobs from SERP API`);
+    console.log(`Found ${jobs.length} jobs with valid descriptions from SERP API`);
     return jobs;
 
   } catch (error: any) {

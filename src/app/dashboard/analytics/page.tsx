@@ -7,6 +7,10 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, TrendingUp, Briefcase, FileText, Target, Brain, Activity, AlertCircle, CheckCircle, Info, BarChart3, Award } from 'lucide-react';
 import { GridPattern } from '@/components/Doodles';
 import DashboardSidebar from '@/components/DashboardSidebar';
+import CircularProgress from '@/components/analytics/CircularProgress';
+import SkillRadar from '@/components/analytics/SkillRadar';
+import BarChart from '@/components/analytics/BarChart';
+import LineChart from '@/components/analytics/LineChart';
 import { UserAnalytics } from '@/lib/types';
 import gsap from 'gsap';
 
@@ -118,54 +122,46 @@ export default function AnalyticsPage() {
           </p>
         </div>
 
-        {/* Overview Stats */}
+        {/* Overview Stats with Circular Progress */}
         <div className="fade-item grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-6 bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-950 rounded-xl flex items-center justify-center">
-                <Briefcase className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-              </div>
-            </div>
-            <p className="text-3xl font-light text-black dark:text-white mb-1">
-              {analytics.totalJobsMatched}
-            </p>
-            <p className="text-sm text-neutral-500">Jobs Matched</p>
+          <div className="p-6 bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl flex flex-col items-center">
+            <CircularProgress
+              value={analytics.totalJobsMatched}
+              max={50}
+              color="rgb(59, 130, 246)"
+              showPercentage={false}
+            />
+            <p className="text-sm text-neutral-500 mt-2">Jobs Matched</p>
           </div>
 
-          <div className="p-6 bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-950 rounded-xl flex items-center justify-center">
-                <FileText className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-              </div>
-            </div>
-            <p className="text-3xl font-light text-black dark:text-white mb-1">
-              {analytics.totalApplications}
-            </p>
-            <p className="text-sm text-neutral-500">Applications</p>
+          <div className="p-6 bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl flex flex-col items-center">
+            <CircularProgress
+              value={analytics.totalApplications}
+              max={20}
+              color="rgb(168, 85, 247)"
+              showPercentage={false}
+            />
+            <p className="text-sm text-neutral-500 mt-2">Applications</p>
           </div>
 
-          <div className="p-6 bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-950 rounded-xl flex items-center justify-center">
-                <Target className="w-6 h-6 text-green-600 dark:text-green-400" />
-              </div>
-            </div>
-            <p className="text-3xl font-light text-black dark:text-white mb-1">
-              {analytics.totalInterviews}
-            </p>
-            <p className="text-sm text-neutral-500">Interview Preps</p>
+          <div className="p-6 bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl flex flex-col items-center">
+            <CircularProgress
+              value={analytics.totalInterviews}
+              max={10}
+              color="rgb(34, 197, 94)"
+              showPercentage={false}
+            />
+            <p className="text-sm text-neutral-500 mt-2">Interview Preps</p>
           </div>
 
-          <div className="p-6 bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-950 rounded-xl flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-              </div>
-            </div>
-            <p className="text-3xl font-light text-black dark:text-white mb-1">
-              {analytics.skillCoverage.length}
-            </p>
-            <p className="text-sm text-neutral-500">Skills Tracked</p>
+          <div className="p-6 bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl flex flex-col items-center">
+            <CircularProgress
+              value={analytics.skillCoverage.length}
+              max={20}
+              color="rgb(249, 115, 22)"
+              showPercentage={false}
+            />
+            <p className="text-sm text-neutral-500 mt-2">Skills Tracked</p>
           </div>
         </div>
 
@@ -219,7 +215,7 @@ export default function AnalyticsPage() {
           </div>
         )}
 
-        {/* Weekly Progress */}
+        {/* Weekly Progress - Line Chart */}
         {analytics.weeklyProgress && analytics.weeklyProgress.length > 0 && (
           <div className="fade-item bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
             <div className="p-6 border-b border-neutral-200 dark:border-neutral-800 flex items-center gap-3">
@@ -230,74 +226,34 @@ export default function AnalyticsPage() {
               </div>
             </div>
             <div className="p-6">
-              <div className="space-y-6">
-                {analytics.weeklyProgress.map((week: any, index: number) => (
-                  <div key={index} className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-black dark:text-white">{week.week}</span>
-                      <div className="flex items-center gap-4 text-xs text-neutral-500">
-                        <span className="flex items-center gap-1">
-                          <div className="w-2 h-2 rounded-full bg-black dark:bg-white" />
-                          {week.jobsViewed} discovered
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <div className="w-2 h-2 rounded-full bg-blue-500" />
-                          {week.applicationsSubmitted} applied
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <div className="w-2 h-2 rounded-full bg-green-500" />
-                          {week.interviewsScheduled} preps
-                        </span>
-                      </div>
-                    </div>
-                    
-                    {/* Jobs Discovered Bar */}
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-xs text-neutral-500">
-                        <span>Jobs Discovered</span>
-                        <span>{week.jobsViewed}</span>
-                      </div>
-                      <div className="relative h-2 bg-neutral-100 dark:bg-neutral-900 rounded-full overflow-hidden">
-                        <div 
-                          className="absolute left-0 top-0 h-full bg-black dark:bg-white rounded-full transition-all"
-                          style={{ width: `${Math.min((week.jobsViewed / 20) * 100, 100)}%` }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Applications Bar */}
-                    {week.applicationsSubmitted > 0 && (
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between text-xs text-neutral-500">
-                          <span>Applications Submitted</span>
-                          <span>{week.applicationsSubmitted}</span>
-                        </div>
-                        <div className="relative h-2 bg-neutral-100 dark:bg-neutral-900 rounded-full overflow-hidden">
-                          <div 
-                            className="absolute left-0 top-0 h-full bg-blue-500 rounded-full transition-all"
-                            style={{ width: `${Math.min((week.applicationsSubmitted / 10) * 100, 100)}%` }}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Interview Preps Bar */}
-                    {week.interviewsScheduled > 0 && (
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between text-xs text-neutral-500">
-                          <span>Interview Preps</span>
-                          <span>{week.interviewsScheduled}</span>
-                        </div>
-                        <div className="relative h-2 bg-neutral-100 dark:bg-neutral-900 rounded-full overflow-hidden">
-                          <div 
-                            className="absolute left-0 top-0 h-full bg-green-500 rounded-full transition-all"
-                            style={{ width: `${Math.min((week.interviewsScheduled / 5) * 100, 100)}%` }}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+              <LineChart
+                data={analytics.weeklyProgress.map((week: any) => ({
+                  label: week.week,
+                  value: week.jobsViewed,
+                }))}
+                height={200}
+                color="rgb(59, 130, 246)"
+              />
+              
+              <div className="mt-8 grid grid-cols-3 gap-4">
+                <div className="text-center p-4 bg-neutral-50 dark:bg-neutral-900 rounded-xl">
+                  <p className="text-2xl font-bold text-black dark:text-white">
+                    {analytics.weeklyProgress.reduce((sum: number, week: any) => sum + week.jobsViewed, 0)}
+                  </p>
+                  <p className="text-xs text-neutral-500 mt-1">Total Jobs Viewed</p>
+                </div>
+                <div className="text-center p-4 bg-neutral-50 dark:bg-neutral-900 rounded-xl">
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    {analytics.weeklyProgress.reduce((sum: number, week: any) => sum + week.applicationsSubmitted, 0)}
+                  </p>
+                  <p className="text-xs text-neutral-500 mt-1">Applications Sent</p>
+                </div>
+                <div className="text-center p-4 bg-neutral-50 dark:bg-neutral-900 rounded-xl">
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                    {analytics.weeklyProgress.reduce((sum: number, week: any) => sum + week.interviewsScheduled, 0)}
+                  </p>
+                  <p className="text-xs text-neutral-500 mt-1">Interview Preps</p>
+                </div>
               </div>
             </div>
           </div>
@@ -305,60 +261,47 @@ export default function AnalyticsPage() {
 
         {/* Skill Coverage */}
         {analytics.skillCoverage && analytics.skillCoverage.length > 0 && (
-          <div className="fade-item bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
-            <div className="p-6 border-b border-neutral-200 dark:border-neutral-800 flex items-center gap-3">
-              <Award className="w-5 h-5 text-black dark:text-white" />
-              <div>
-                <h2 className="text-xl font-medium text-black dark:text-white">Skill Coverage Analysis</h2>
-                <p className="text-sm text-neutral-500">Your strengths and areas for improvement</p>
+          <div className="fade-item grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Skill Radar Chart */}
+            <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
+              <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
+                <h2 className="text-xl font-medium text-black dark:text-white">Top Skills Radar</h2>
+                <p className="text-sm text-neutral-500">Visual representation of your top 6 skills</p>
+              </div>
+              <div className="p-6 flex items-center justify-center">
+                <SkillRadar skills={analytics.skillCoverage} />
               </div>
             </div>
-            <div className="p-6 space-y-6">
-              {analytics.skillCoverage.slice(0, 12).map((skill: any, index: number) => {
-                const proficiency = Math.round(skill.current);
-                const isStrength = proficiency >= 85;
-                const needsWork = proficiency < 70;
-                
-                return (
-                  <div key={index}>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm font-medium text-black dark:text-white">{skill.skill}</span>
-                        {isStrength && (
-                          <span className="text-xs px-2 py-0.5 bg-green-100 dark:bg-green-950 text-green-600 dark:text-green-400 rounded-full">
-                            Strength
-                          </span>
-                        )}
-                        {needsWork && (
-                          <span className="text-xs px-2 py-0.5 bg-yellow-100 dark:bg-yellow-950 text-yellow-600 dark:text-yellow-400 rounded-full">
-                            Improve
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs text-neutral-500">
-                          {skill.jobsRequiring} {skill.jobsRequiring === 1 ? 'job' : 'jobs'}
-                        </span>
-                        <span className="text-xs font-mono text-black dark:text-white">
-                          {proficiency}%
-                        </span>
-                      </div>
-                    </div>
-                    <div className="relative h-2.5 bg-neutral-100 dark:bg-neutral-900 rounded-full overflow-hidden">
-                      <div 
-                        className={`absolute left-0 top-0 h-full rounded-full transition-all ${
-                          isStrength 
-                            ? 'bg-green-500' 
-                            : needsWork 
-                            ? 'bg-yellow-500' 
-                            : 'bg-black dark:bg-white'
-                        }`}
-                        style={{ width: `${proficiency}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+
+            {/* Skill Bar Chart */}
+            <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
+              <div className="p-6 border-b border-neutral-200 dark:border-neutral-800 flex items-center gap-3">
+                <Award className="w-5 h-5 text-black dark:text-white" />
+                <div>
+                  <h2 className="text-xl font-medium text-black dark:text-white">Skill Proficiency</h2>
+                  <p className="text-sm text-neutral-500">Your skill levels and job demand</p>
+                </div>
+              </div>
+              <div className="p-6">
+                <BarChart
+                  data={analytics.skillCoverage.slice(0, 8).map((skill: any) => {
+                    const proficiency = Math.round(skill.current);
+                    const isStrength = proficiency >= 85;
+                    const needsWork = proficiency < 70;
+                    
+                    return {
+                      label: skill.skill,
+                      value: proficiency,
+                      color: isStrength 
+                        ? 'rgb(34, 197, 94)' 
+                        : needsWork 
+                        ? 'rgb(234, 179, 8)' 
+                        : 'rgb(0, 0, 0)',
+                    };
+                  })}
+                  maxValue={100}
+                />
+              </div>
             </div>
           </div>
         )}

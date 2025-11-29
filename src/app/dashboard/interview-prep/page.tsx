@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { ArrowLeft, Brain, Loader2, Sparkles, BookOpen, Code, MessageSquare, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { GridPattern } from '@/components/Doodles';
 import DashboardSidebar from '@/components/DashboardSidebar';
+import AudioLecturePlayer from '@/components/AudioLecturePlayer';
 import { InterviewPrep } from '@/lib/types';
 import gsap from 'gsap';
 
@@ -20,6 +21,7 @@ export default function InterviewPrepPage() {
   const [role, setRole] = useState('');
   const [technologies, setTechnologies] = useState('');
   const [generating, setGenerating] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [prepMaterial, setPrepMaterial] = useState<InterviewPrep | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['technical']));
 
@@ -29,17 +31,50 @@ export default function InterviewPrepPage() {
     }
   }, [user, authLoading, router]);
 
-  // Pre-fill form from URL parameters
+  // Load existing prep material on mount
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    const loadExistingPrep = async () => {
+      if (!user) return;
+      
+      // Check if coming from jobs page with URL parameters
       const params = new URLSearchParams(window.location.search);
       const roleParam = params.get('role');
       const techParam = params.get('technologies');
       
-      if (roleParam) setRole(roleParam);
-      if (techParam) setTechnologies(techParam);
+      // If URL parameters exist, show form with pre-filled data (new prep session)
+      if (roleParam || techParam) {
+        if (roleParam) setRole(roleParam);
+        if (techParam) setTechnologies(techParam);
+        setStep(1); // Show form
+        setLoading(false);
+        return;
+      }
+      
+      // Otherwise, try to load existing prep material
+      try {
+        const response = await fetch(`/api/interview/latest?userId=${user.id}`);
+        const data = await response.json();
+        
+        if (data.success && data.data) {
+          setPrepMaterial(data.data);
+          setRole(data.data.role);
+          setTechnologies(data.data.technologies.join(', '));
+          setStep(3); // Show existing prep
+        } else {
+          setStep(1); // Show form if no existing prep
+        }
+      } catch (error) {
+        console.error('Error loading existing prep:', error);
+        setStep(1); // Show form on error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user) {
+      loadExistingPrep();
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -99,7 +134,7 @@ export default function InterviewPrepPage() {
     });
   };
 
-  if (authLoading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
         <Loader2 className="w-6 h-6 animate-spin text-black dark:text-white" />
@@ -252,6 +287,9 @@ export default function InterviewPrepPage() {
                 </p>
               </div>
             </div>
+
+            {/* Audio Lecture Player */}
+            <AudioLecturePlayer prepMaterial={prepMaterial} />
 
             {/* Role Insights */}
             <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
@@ -430,7 +468,25 @@ export default function InterviewPrepPage() {
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-center gap-4">
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <Button
+                onClick={() => router.push(`/dashboard/video-interview?category=technical&prepId=${prepMaterial.id}`)}
+                className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                Video Evaluation (Technical)
+              </Button>
+              <Button
+                onClick={() => router.push(`/dashboard/video-interview?category=behavioral&prepId=${prepMaterial.id}`)}
+                className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                Video Evaluation (Behavioral)
+              </Button>
               <Button
                 onClick={() => router.push('/dashboard')}
                 className="bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200"

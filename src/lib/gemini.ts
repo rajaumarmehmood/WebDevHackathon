@@ -292,3 +292,91 @@ Return ONLY valid JSON array, no markdown or additional text.
     throw new Error('Failed to analyze skill gaps');
   }
 }
+
+export async function generateTailoredResume(
+  originalResume: any,
+  jobTitle: string,
+  jobDescription: string,
+  jobRequirements: string[],
+  jobTags: string[]
+) {
+  try {
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-2.5-flash'
+    });
+
+    const prompt = `
+You are an expert resume writer. Tailor the following resume to match this job posting.
+
+Original Resume:
+Name: ${originalResume.name}
+Email: ${originalResume.email}
+Phone: ${originalResume.phone || 'N/A'}
+Skills: ${originalResume.skills.join(', ')}
+Experience: ${JSON.stringify(originalResume.experience)}
+Education: ${JSON.stringify(originalResume.education)}
+Projects: ${JSON.stringify(originalResume.projects)}
+Summary: ${originalResume.summary || ''}
+
+Target Job:
+Title: ${jobTitle}
+Description: ${jobDescription}
+Requirements: ${jobRequirements.join(', ')}
+Key Skills: ${jobTags.join(', ')}
+
+Instructions:
+1. Rewrite the professional summary to align with the job
+2. Highlight relevant skills that match job requirements
+3. Reorder and emphasize relevant experience
+4. Add relevant keywords from job description
+5. Quantify achievements where possible
+6. Keep the same factual information, just reframe it
+7. Make it ATS-friendly
+
+Return a JSON object with:
+{
+  "name": "string",
+  "email": "string",
+  "phone": "string",
+  "summary": "tailored professional summary (3-4 sentences)",
+  "skills": ["array of relevant skills, prioritized for this job"],
+  "experience": [
+    {
+      "title": "string",
+      "company": "string",
+      "duration": "string",
+      "description": "tailored description emphasizing relevant achievements"
+    }
+  ],
+  "education": [same as original],
+  "projects": [
+    {
+      "name": "string",
+      "description": "tailored description",
+      "tech": ["array"]
+    }
+  ]
+}
+
+Return ONLY valid JSON, no markdown or additional text.
+`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    // Clean up the response
+    let jsonText = text.trim();
+    if (jsonText.startsWith('```json')) {
+      jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    } else if (jsonText.startsWith('```')) {
+      jsonText = jsonText.replace(/```\n?/g, '');
+    }
+    
+    const tailoredResume = JSON.parse(jsonText);
+    return tailoredResume;
+  } catch (error) {
+    console.error('Error generating tailored resume:', error);
+    throw new Error('Failed to generate tailored resume');
+  }
+}

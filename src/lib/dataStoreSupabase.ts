@@ -65,12 +65,26 @@ class SupabaseDataStore {
   async saveJobMatches(userId: string, matches: JobMatch[]): Promise<void> {
     const supabase = await createClient();
     
-    const applications = matches.map(match => ({
+    // Filter out jobs without proper descriptions before saving
+    const validMatches = matches.filter(match => {
+      const hasDescription = match.job.description && match.job.description.trim().length >= 50;
+      if (!hasDescription) {
+        console.log(`DataStore: Skipping job without description: ${match.job.title} at ${match.job.company}`);
+      }
+      return hasDescription;
+    });
+
+    if (validMatches.length === 0) {
+      console.log('No valid job matches to save (all filtered out due to missing descriptions)');
+      return;
+    }
+
+    const applications = validMatches.map(match => ({
       user_id: userId,
       job_title: match.job.title,
       company: match.job.company,
       location: match.job.location,
-      description: match.job.description || 'No description available',
+      description: match.job.description.trim(),
       requirements: match.job.requirements || [],
       salary_range: match.job.salary || null,
       job_type: match.job.type || 'Full-time',
@@ -83,7 +97,7 @@ class SupabaseDataStore {
       status: match.status,
     }));
 
-    console.log(`Inserting ${applications.length} job applications to Supabase...`);
+    console.log(`Inserting ${applications.length} job applications to Supabase (filtered from ${matches.length})...`);
     
     const { data, error } = await supabase
       .from('job_applications')

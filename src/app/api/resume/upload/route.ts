@@ -138,18 +138,29 @@ async function processJobsInBackground(userId: string, analysis: any, supabase: 
       const jobs = await searchJobs(skills, 'Pakistan', 20);
       console.log(`Found ${jobs.length} jobs`);
 
-      if (jobs.length > 0) {
+      // Filter out jobs without proper descriptions
+      const validJobs = jobs.filter(job => {
+        const hasDescription = job.description && job.description.trim().length >= 50;
+        if (!hasDescription) {
+          console.log(`Background: Filtering out job without description: ${job.title} at ${job.company}`);
+        }
+        return hasDescription;
+      });
+
+      console.log(`Background: Processing ${validJobs.length} jobs with valid descriptions (filtered from ${jobs.length})`);
+
+      if (validJobs.length > 0) {
         // Match jobs to profile using AI
         console.log('Matching jobs to profile with AI...');
         const matches = await matchJobsToProfile(
           skills,
           yearsOfExperience,
           proficiencyLevel,
-          jobs
+          validJobs
         );
 
         // Create job matches
-        const jobMatches: JobMatch[] = jobs.map((job, index) => {
+        const jobMatches: JobMatch[] = validJobs.map((job, index) => {
           const match = matches.find((m: any) => m.jobId === job.id) || {
             matchScore: 50,
             matchReasons: ['General match based on profile'],

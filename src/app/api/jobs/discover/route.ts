@@ -31,24 +31,35 @@ export async function POST(request: NextRequest) {
     // Search for jobs
     const jobs = await searchJobs(skills, location, limit);
 
-    if (jobs.length === 0) {
+    // Filter out jobs without proper descriptions
+    const validJobs = jobs.filter(job => {
+      const hasDescription = job.description && job.description.trim().length >= 50;
+      if (!hasDescription) {
+        console.log(`Filtering out job without description: ${job.title} at ${job.company}`);
+      }
+      return hasDescription;
+    });
+
+    if (validJobs.length === 0) {
       return NextResponse.json({
         success: true,
         data: [],
-        message: 'No jobs found matching your profile',
+        message: 'No jobs found with valid descriptions matching your profile',
       });
     }
+
+    console.log(`Processing ${validJobs.length} jobs with valid descriptions (filtered from ${jobs.length})`);
 
     // Match jobs to profile using AI
     const matches = await matchJobsToProfile(
       skills,
       yearsOfExperience,
       proficiencyLevel,
-      jobs
+      validJobs
     );
 
     // Create job matches
-    const jobMatches: JobMatch[] = jobs.map((job, index) => {
+    const jobMatches: JobMatch[] = validJobs.map((job, index) => {
       const match = matches.find((m: any) => m.jobId === job.id) || {
         matchScore: 50,
         matchReasons: ['General match based on profile'],
