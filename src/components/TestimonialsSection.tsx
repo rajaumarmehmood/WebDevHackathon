@@ -41,8 +41,8 @@ export default function TestimonialsSection() {
         <section className="py-24 px-6 lg:px-8 bg-neutral-50 dark:bg-neutral-900/50">
             <div className="max-w-7xl mx-auto">
                 <div className="text-center mb-16">
-                    <p className="text-sm font-mono tracking-widest text-red-500 uppercase mb-4 flex items-center justify-center gap-2">
-                        <span className="w-8 h-px bg-red-500"></span>
+                    <p className="text-sm font-mono tracking-widest text-blue-500 uppercase mb-4 flex items-center justify-center gap-2">
+                        <span className="w-8 h-px bg-blue-500"></span>
                         WHAT CLIENTS SAY
                     </p>
                     <h2 className="text-4xl lg:text-5xl font-serif text-black dark:text-white mb-6">
@@ -61,7 +61,7 @@ export default function TestimonialsSection() {
                                 key={t.id}
                                 onClick={() => setActiveId(t.id)}
                                 className={`relative overflow-hidden rounded-3xl transition-all duration-300 ${activeId === t.id
-                                    ? 'w-32 h-32 ring-4 ring-red-500 ring-offset-4 ring-offset-neutral-50 dark:ring-offset-neutral-900 grayscale-0'
+                                    ? 'w-32 h-32 ring-4 ring-blue-500 ring-offset-4 ring-offset-neutral-50 dark:ring-offset-neutral-900 grayscale-0'
                                     : 'w-24 h-24 opacity-50 grayscale hover:opacity-100 hover:grayscale-0'
                                     }`}
                                 layout
@@ -78,13 +78,13 @@ export default function TestimonialsSection() {
 
                     {/* Right Column: Content Card */}
                     <div className="lg:col-span-8">
-                        <AnimatePresence mode="wait">
+                        <AnimatePresence mode='popLayout'>
                             <motion.div
                                 key={activeId}
-                                initial={{ opacity: 0, x: 20 }}
+                                initial={{ opacity: 0, x: 10 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -20 }}
-                                transition={{ duration: 0.4 }}
+                                exit={{ opacity: 0, x: -10 }}
+                                transition={{ duration: 0.25, ease: "easeOut" }}
                                 className="bg-white dark:bg-black rounded-[2rem] p-8 lg:p-12 shadow-xl relative"
                             >
                                 {/* Background Quote Icon */}
@@ -109,7 +109,7 @@ export default function TestimonialsSection() {
 
                                         <div className="flex gap-1">
                                             {[...Array(activeTestimonial.rating)].map((_, i) => (
-                                                <Star key={i} className="w-5 h-5 fill-red-500 text-red-500" />
+                                                <Star key={i} className="w-5 h-5 fill-blue-500 text-blue-500" />
                                             ))}
                                         </div>
                                     </div>

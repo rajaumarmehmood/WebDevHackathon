@@ -20,8 +20,17 @@ export async function POST(request: NextRequest) {
     });
 
     if (error) {
+      console.error('Supabase auth error:', error);
       return NextResponse.json(
         { error: error.message },
+        { status: 401 }
+      );
+    }
+
+    if (!data.session) {
+      console.error('No session returned from Supabase');
+      return NextResponse.json(
+        { error: 'Authentication failed - no session' },
         { status: 401 }
       );
     }
@@ -35,6 +44,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message: 'Login successful',
+      token: data.session?.access_token || '',
       user: profile || {
         id: data.user.id,
         email: data.user.email,

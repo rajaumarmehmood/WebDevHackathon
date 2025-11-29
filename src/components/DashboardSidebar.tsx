@@ -29,7 +29,7 @@ export default function DashboardSidebar({ user }: DashboardSidebarProps) {
         <div className="w-9 h-9 bg-black dark:bg-white rounded-full flex items-center justify-center">
           <Brain className="w-4 h-4 text-white dark:text-black" />
         </div>
-        <span className="text-lg font-medium text-black dark:text-white">CareerAI</span>
+        <span className="text-lg font-medium text-black dark:text-white">Navigation</span>
       </div>
 
       <nav className="flex-1 space-y-1">
@@ -39,11 +39,10 @@ export default function DashboardSidebar({ user }: DashboardSidebarProps) {
             <button
               key={item.href}
               onClick={() => router.push(item.href)}
-              className={`dash-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left ${
-                isActive
+              className={`dash-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left ${isActive
                   ? 'bg-black dark:bg-white text-white dark:text-black'
                   : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-900 hover:text-black dark:hover:text-white'
-              }`}
+                }`}
             >
               <item.icon className="w-5 h-5" />
               <span className="text-sm font-medium">{item.label}</span>

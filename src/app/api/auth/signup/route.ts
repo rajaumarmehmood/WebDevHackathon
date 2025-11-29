@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message: 'User created successfully',
+      token: data.session?.access_token || '',
       user: {
         id: data.user?.id,
         email: data.user?.email,
