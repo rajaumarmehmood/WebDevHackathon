@@ -3,15 +3,14 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { useResume } from '@/lib/supabase/hooks';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Upload, FileText, Loader2, CheckCircle, X, Brain, Sparkles } from 'lucide-react';
 import { GridPattern } from '@/components/Doodles';
+import DashboardSidebar from '@/components/DashboardSidebar';
 import gsap from 'gsap';
 
 export default function UploadResumePage() {
   const { user, isLoading } = useAuth();
-  const { resume: savedResume, saveResume } = useResume();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -19,13 +18,31 @@ export default function UploadResumePage() {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<any>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [loadingExisting, setLoadingExisting] = useState(false);
 
-  // Load saved resume analysis if exists
+  // Fetch existing resume on mount
   useEffect(() => {
-    if (savedResume?.analysis) {
-      setAnalysis(savedResume.analysis);
-    }
-  }, [savedResume]);
+    const fetchExistingResume = async () => {
+      if (!user) return;
+      
+      setLoadingExisting(true);
+      try {
+        const response = await fetch(`/api/resume/upload?userId=${user.id}`);
+        const data = await response.json();
+        
+        if (response.ok && data.data) {
+          setAnalysis(data.data.analysis);
+          console.log('Loaded existing resume analysis:', data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching existing resume:', error);
+      } finally {
+        setLoadingExisting(false);
+      }
+    };
+
+    fetchExistingResume();
+  }, [user]);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -73,45 +90,43 @@ export default function UploadResumePage() {
   };
 
   const handleUpload = async () => {
-    if (!file) return;
+    if (!file || !user) return;
     
     setUploading(true);
     setAnalyzing(true);
     
-    // Simulate upload and analysis
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setUploading(false);
-    
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    setAnalyzing(false);
-    
-    // Mock analysis result (in production, this would come from AI analysis)
-    const analysisResult = {
-      name: user?.name || 'John Doe',
-      email: user?.email || 'john@example.com',
-      skills: ['React', 'TypeScript', 'Node.js', 'Python', 'AWS', 'Docker', 'MongoDB', 'GraphQL'],
-      experience: [
-        { title: 'Software Engineer', company: 'Tech Corp', duration: '2021 - Present' },
-        { title: 'Junior Developer', company: 'StartupXYZ', duration: '2019 - 2021' },
-      ],
-      education: [
-        { degree: 'BS Computer Science', school: 'University Name', year: '2019' },
-      ],
-      projects: [
-        { name: 'E-commerce Platform', tech: ['React', 'Node.js', 'MongoDB'] },
-        { name: 'Task Management App', tech: ['TypeScript', 'Next.js', 'PostgreSQL'] },
-      ],
-      proficiencyLevel: 'Mid-Level',
-      yearsOfExperience: 4,
-    };
-    
-    setAnalysis(analysisResult);
-    
-    // Save to Supabase
-    await saveResume(file.name, null, analysisResult);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('userId', user.id);
+
+      const response = await fetch('/api/resume/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to upload resume');
+      }
+
+      // Show analysis immediately - jobs are being processed in background
+      setUploading(false);
+      setAnalyzing(false);
+      setAnalysis(data.data.analysis);
+      
+      // Show success message that jobs are being discovered
+      console.log('Resume analyzed! Jobs are being discovered in the background...');
+    } catch (error: any) {
+      console.error('Error uploading resume:', error);
+      alert(error.message || 'Failed to upload resume');
+      setUploading(false);
+      setAnalyzing(false);
+    }
   };
 
-  if (isLoading) {
+  if (isLoading || loadingExisting) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
         <Loader2 className="w-6 h-6 animate-spin text-black dark:text-white" />
@@ -124,30 +139,34 @@ export default function UploadResumePage() {
   return (
     <div ref={containerRef} className="min-h-screen bg-neutral-50 dark:bg-neutral-950 relative">
       <GridPattern />
+      
+      <DashboardSidebar user={user} />
 
-      {/* Header */}
-      <header className="sticky top-0 z-30 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 px-6 lg:px-8 py-4">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => router.push('/dashboard')}
-            className="gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Dashboard
-          </Button>
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-black dark:bg-white rounded-full flex items-center justify-center">
-              <Brain className="w-4 h-4 text-white dark:text-black" />
+      {/* Main Content */}
+      <main className="lg:ml-64 min-h-screen">
+        {/* Header */}
+        <header className="sticky top-0 z-30 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => router.push('/dashboard')}
+              className="gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Dashboard
+            </Button>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-black dark:bg-white rounded-full flex items-center justify-center">
+                <Brain className="w-4 h-4 text-white dark:text-black" />
+              </div>
+              <span className="text-sm font-medium text-black dark:text-white">CareerAI</span>
             </div>
-            <span className="text-sm font-medium text-black dark:text-white">CareerAI</span>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Content */}
-      <div className="max-w-5xl mx-auto px-6 lg:px-8 py-12 space-y-8">
+        {/* Content */}
+        <div className="max-w-5xl mx-auto px-6 lg:px-8 py-12 space-y-8">
         {/* Title */}
         <div className="fade-item text-center">
           <h1 className="text-4xl lg:text-5xl font-light tracking-tight text-black dark:text-white mb-4">
@@ -277,6 +296,14 @@ export default function UploadResumePage() {
               </div>
             </div>
 
+            <div className="p-6 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-2xl flex items-center gap-4">
+              <Loader2 className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin" />
+              <div>
+                <h3 className="text-lg font-medium text-blue-900 dark:text-blue-100">Discovering Jobs...</h3>
+                <p className="text-sm text-blue-700 dark:text-blue-300">We're finding matching opportunities for you in the background. Check the Jobs page in a moment!</p>
+              </div>
+            </div>
+
             {/* Profile Summary */}
             <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
               <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
@@ -356,7 +383,8 @@ export default function UploadResumePage() {
             </div>
           </div>
         )}
-      </div>
+        </div>
+      </main>
       <div className="noise-overlay" />
     </div>
   );

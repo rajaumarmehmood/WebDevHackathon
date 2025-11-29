@@ -3,33 +3,43 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { useInterviewPreps } from '@/lib/supabase/hooks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Brain, Loader2, Sparkles, Target, BookOpen, Code, MessageSquare, TrendingUp, CheckCircle, ChevronDown, ChevronUp, History } from 'lucide-react';
+import { ArrowLeft, Brain, Loader2, Sparkles, BookOpen, Code, MessageSquare, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { GridPattern } from '@/components/Doodles';
+import DashboardSidebar from '@/components/DashboardSidebar';
+import { InterviewPrep } from '@/lib/types';
 import gsap from 'gsap';
 
 export default function InterviewPrepPage() {
-  const { user, isLoading } = useAuth();
-  const { preps: savedPreps, savePrep } = useInterviewPreps();
+  const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const [step, setStep] = useState(1);
-  const [company, setCompany] = useState('');
   const [role, setRole] = useState('');
   const [technologies, setTechnologies] = useState('');
   const [generating, setGenerating] = useState(false);
-  const [prepMaterial, setPrepMaterial] = useState<any>(null);
+  const [prepMaterial, setPrepMaterial] = useState<InterviewPrep | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['technical']));
-  const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!authLoading && !user) {
       router.push('/login');
     }
-  }, [user, isLoading, router]);
+  }, [user, authLoading, router]);
+
+  // Pre-fill form from URL parameters
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const roleParam = params.get('role');
+      const techParam = params.get('technologies');
+      
+      if (roleParam) setRole(roleParam);
+      if (techParam) setTechnologies(techParam);
+    }
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -41,120 +51,40 @@ export default function InterviewPrepPage() {
     }
   }, [user]);
 
-  const loadSavedPrep = (prep: any) => {
-    setCompany(prep.company);
-    setRole(prep.role);
-    setTechnologies(prep.technologies.join(', '));
-    setPrepMaterial(prep.prep_material);
-    setStep(3);
-    setShowHistory(false);
-  };
-
   const handleGenerate = async () => {
+    if (!user) return;
+    
     setGenerating(true);
     setStep(2);
     
-    // Simulate AI research and generation
-    await new Promise(resolve => setTimeout(resolve, 4000));
-    
-    const techArray = technologies.split(',').map(t => t.trim());
-    
-    // Mock prep material
-    const generatedMaterial = {
-      company,
-      role,
-      technologies: techArray,
-      technicalQuestions: [
-        {
-          question: 'Explain the event loop in Node.js and how it handles asynchronous operations.',
-          difficulty: 'Medium',
-          category: 'Node.js',
-          hints: ['Think about the call stack', 'Consider callback queue', 'Microtasks vs Macrotasks'],
-          answer: 'The event loop is a mechanism that allows Node.js to perform non-blocking I/O operations...'
-        },
-        {
-          question: 'What are the differences between async/await and Promises? When would you use one over the other?',
-          difficulty: 'Medium',
-          category: 'JavaScript',
-          hints: ['Syntax differences', 'Error handling', 'Readability'],
-          answer: 'Async/await is syntactic sugar built on top of Promises...'
-        },
-        {
-          question: 'How would you optimize a React application for performance?',
-          difficulty: 'Hard',
-          category: 'React',
-          hints: ['Memoization', 'Code splitting', 'Virtual DOM'],
-          answer: 'Key optimization techniques include using React.memo, useMemo, useCallback...'
-        },
-        {
-          question: 'Explain the concept of closures in JavaScript with a practical example.',
-          difficulty: 'Easy',
-          category: 'JavaScript',
-          hints: ['Lexical scope', 'Function returning function', 'Private variables'],
-          answer: 'A closure is a function that has access to variables in its outer scope...'
-        },
-      ],
-      behavioralQuestions: [
-        {
-          question: 'Tell me about a time when you had to debug a complex issue in production.',
-          category: 'Problem Solving',
-          framework: 'STAR',
-          tips: ['Focus on your systematic approach', 'Highlight tools used', 'Emphasize the outcome']
-        },
-        {
-          question: 'Describe a situation where you had to learn a new technology quickly.',
-          category: 'Learning Agility',
-          framework: 'STAR',
-          tips: ['Show your learning process', 'Mention resources used', 'Demonstrate application']
-        },
-        {
-          question: 'How do you handle disagreements with team members about technical decisions?',
-          category: 'Teamwork',
-          framework: 'STAR',
-          tips: ['Show respect for others', 'Data-driven approach', 'Compromise and collaboration']
-        },
-      ],
-      studyGuide: [
-        {
-          topic: 'Node.js Event Loop',
-          priority: 'High',
-          resources: ['Node.js Official Docs', 'Event Loop Visualization', 'Philip Roberts Talk'],
-          timeEstimate: '2 hours'
-        },
-        {
-          topic: 'React Performance Optimization',
-          priority: 'High',
-          resources: ['React Docs - Optimization', 'Web.dev Performance', 'Kent C. Dodds Blog'],
-          timeEstimate: '3 hours'
-        },
-        {
-          topic: 'Async Patterns in JavaScript',
-          priority: 'Medium',
-          resources: ['JavaScript.info', 'MDN Web Docs', 'You Don\'t Know JS'],
-          timeEstimate: '2 hours'
-        },
-        {
-          topic: 'System Design Basics',
-          priority: 'Medium',
-          resources: ['System Design Primer', 'Grokking System Design', 'ByteByteGo'],
-          timeEstimate: '4 hours'
-        },
-      ],
-      companyInsights: {
-        culture: 'Fast-paced startup environment with focus on innovation',
-        techStack: ['Node.js', 'React', 'TypeScript', 'AWS', 'MongoDB'],
-        interviewProcess: '1. Phone Screen → 2. Technical Assessment → 3. System Design → 4. Cultural Fit',
-        tips: ['Emphasize your ability to work in ambiguity', 'Show examples of taking initiative', 'Demonstrate full-stack capabilities']
+    try {
+      const techArray = technologies.split(',').map(t => t.trim()).filter(t => t);
+      
+      const response = await fetch('/api/interview/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          role,
+          technologies: techArray,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate prep material');
       }
-    };
-    
-    setPrepMaterial(generatedMaterial);
-    
-    // Save to Supabase
-    await savePrep(company, role, techArray, generatedMaterial);
-    
-    setGenerating(false);
-    setStep(3);
+
+      setPrepMaterial(data.data);
+      setStep(3);
+    } catch (error: any) {
+      console.error('Error generating prep:', error);
+      alert(error.message || 'Failed to generate interview prep');
+      setStep(1);
+    } finally {
+      setGenerating(false);
+    }
   };
 
   const toggleSection = (section: string) => {
@@ -169,7 +99,7 @@ export default function InterviewPrepPage() {
     });
   };
 
-  if (isLoading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
         <Loader2 className="w-6 h-6 animate-spin text-black dark:text-white" />
@@ -182,30 +112,34 @@ export default function InterviewPrepPage() {
   return (
     <div ref={containerRef} className="min-h-screen bg-neutral-50 dark:bg-neutral-950 relative">
       <GridPattern />
+      
+      <DashboardSidebar user={user} />
 
-      {/* Header */}
-      <header className="sticky top-0 z-30 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 px-6 lg:px-8 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => router.push('/dashboard')}
-            className="gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Dashboard
-          </Button>
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-black dark:bg-white rounded-full flex items-center justify-center">
-              <Brain className="w-4 h-4 text-white dark:text-black" />
+      {/* Main Content */}
+      <main className="lg:ml-64 min-h-screen">
+        {/* Header */}
+        <header className="sticky top-0 z-30 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-neutral-200 dark:border-neutral-800 px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => router.push('/dashboard')}
+              className="gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Dashboard
+            </Button>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-black dark:bg-white rounded-full flex items-center justify-center">
+                <Brain className="w-4 h-4 text-white dark:text-black" />
+              </div>
+              <span className="text-sm font-medium text-black dark:text-white">CareerAI</span>
             </div>
-            <span className="text-sm font-medium text-black dark:text-white">CareerAI</span>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Content */}
-      <div className="max-w-6xl mx-auto px-6 lg:px-8 py-12 space-y-8">
+        {/* Content */}
+        <div className="max-w-6xl mx-auto px-6 lg:px-8 py-12 space-y-8">
         {step === 1 && (
           <>
             {/* Title */}
@@ -218,53 +152,9 @@ export default function InterviewPrepPage() {
               </p>
             </div>
 
-            {/* Previous Preps */}
-            {savedPreps.length > 0 && (
-              <div className="fade-item max-w-2xl mx-auto">
-                <button
-                  onClick={() => setShowHistory(!showHistory)}
-                  className="w-full p-4 bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-xl flex items-center justify-between hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <History className="w-5 h-5 text-neutral-500" />
-                    <span className="text-sm font-medium text-black dark:text-white">
-                      Previous Prep Sessions ({savedPreps.length})
-                    </span>
-                  </div>
-                  {showHistory ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                </button>
-                {showHistory && (
-                  <div className="mt-2 space-y-2">
-                    {savedPreps.map((prep: any) => (
-                      <button
-                        key={prep.id}
-                        onClick={() => loadSavedPrep(prep)}
-                        className="w-full p-4 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl text-left hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                      >
-                        <p className="font-medium text-black dark:text-white">{prep.role}</p>
-                        <p className="text-sm text-neutral-500">{prep.company} • {new Date(prep.created_at).toLocaleDateString()}</p>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
             {/* Form */}
             <div className="fade-item max-w-2xl mx-auto">
               <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl p-8 space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="company">Company Name</Label>
-                  <Input
-                    id="company"
-                    type="text"
-                    value={company}
-                    onChange={(e) => setCompany(e.target.value)}
-                    placeholder="e.g., Google, Microsoft, Startup XYZ"
-                    className="h-12"
-                  />
-                </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="role">Role / Position</Label>
                   <Input
@@ -291,7 +181,7 @@ export default function InterviewPrepPage() {
 
                 <Button
                   onClick={handleGenerate}
-                  disabled={!company || !role || !technologies}
+                  disabled={!role || !technologies || generating}
                   className="w-full h-12 bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200"
                 >
                   <Sparkles className="w-4 h-4 mr-2" />
@@ -306,7 +196,7 @@ export default function InterviewPrepPage() {
                 { icon: Code, title: 'Technical Questions', desc: 'Role-specific coding challenges' },
                 { icon: MessageSquare, title: 'Behavioral Prep', desc: 'STAR method examples' },
                 { icon: BookOpen, title: 'Study Guide', desc: 'Curated learning resources' },
-                { icon: Target, title: 'Company Insights', desc: 'Culture and interview tips' },
+                { icon: Brain, title: 'Role Insights', desc: 'General interview tips' },
               ].map((feature) => (
                 <div key={feature.title} className="p-6 bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-xl text-center">
                   <div className="inline-flex items-center justify-center w-12 h-12 bg-neutral-100 dark:bg-neutral-900 rounded-xl mb-3">
@@ -330,7 +220,7 @@ export default function InterviewPrepPage() {
                 AI is researching...
               </h2>
               <p className="text-neutral-500 mb-8">
-                Analyzing {company} interview patterns, {role} requirements, and {technologies} best practices
+                Analyzing {role} requirements and {technologies} best practices
               </p>
               <div className="space-y-3">
                 {[
@@ -358,25 +248,25 @@ export default function InterviewPrepPage() {
               <div>
                 <h3 className="text-lg font-medium text-green-900 dark:text-green-100">Prep Material Ready!</h3>
                 <p className="text-sm text-green-700 dark:text-green-300">
-                  Personalized for {prepMaterial.role} at {prepMaterial.company}
+                  Personalized for {prepMaterial.role} position
                 </p>
               </div>
             </div>
 
-            {/* Company Insights */}
+            {/* Role Insights */}
             <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
               <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
-                <h2 className="text-xl font-medium text-black dark:text-white">Company Insights</h2>
+                <h2 className="text-xl font-medium text-black dark:text-white">Role Insights</h2>
               </div>
               <div className="p-6 space-y-4">
                 <div>
-                  <p className="text-xs text-neutral-400 uppercase tracking-wider mb-2">Culture</p>
-                  <p className="text-neutral-700 dark:text-neutral-300">{prepMaterial.companyInsights.culture}</p>
+                  <p className="text-xs text-neutral-400 uppercase tracking-wider mb-2">Overview</p>
+                  <p className="text-neutral-700 dark:text-neutral-300">{prepMaterial.material.companyInsights.culture}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-neutral-400 uppercase tracking-wider mb-2">Tech Stack</p>
+                  <p className="text-xs text-neutral-400 uppercase tracking-wider mb-2">Key Technologies</p>
                   <div className="flex flex-wrap gap-2">
-                    {prepMaterial.companyInsights.techStack.map((tech: string) => (
+                    {prepMaterial.material.companyInsights.techStack.map((tech: string) => (
                       <span key={tech} className="px-3 py-1 bg-neutral-100 dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 rounded-full text-sm">
                         {tech}
                       </span>
@@ -384,13 +274,13 @@ export default function InterviewPrepPage() {
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs text-neutral-400 uppercase tracking-wider mb-2">Interview Process</p>
-                  <p className="text-neutral-700 dark:text-neutral-300">{prepMaterial.companyInsights.interviewProcess}</p>
+                  <p className="text-xs text-neutral-400 uppercase tracking-wider mb-2">Typical Interview Process</p>
+                  <p className="text-neutral-700 dark:text-neutral-300">{prepMaterial.material.companyInsights.interviewProcess}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-neutral-400 uppercase tracking-wider mb-2">Tips</p>
+                  <p className="text-xs text-neutral-400 uppercase tracking-wider mb-2">Preparation Tips</p>
                   <ul className="space-y-2">
-                    {prepMaterial.companyInsights.tips.map((tip: string, i: number) => (
+                    {prepMaterial.material.companyInsights.tips.map((tip: string, i: number) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-neutral-700 dark:text-neutral-300">
                         <span className="text-green-500">•</span>
                         {tip}
@@ -410,13 +300,13 @@ export default function InterviewPrepPage() {
                 <div className="flex items-center gap-3">
                   <Code className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
                   <h2 className="text-xl font-medium text-black dark:text-white">Technical Questions</h2>
-                  <span className="text-sm text-neutral-500">({prepMaterial.technicalQuestions.length})</span>
+                  <span className="text-sm text-neutral-500">({prepMaterial.material.technicalQuestions.length})</span>
                 </div>
                 {expandedSections.has('technical') ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
               </button>
               {expandedSections.has('technical') && (
                 <div className="p-6 space-y-4">
-                  {prepMaterial.technicalQuestions.map((q: any, i: number) => (
+                  {prepMaterial.material.technicalQuestions.map((q: any, i: number) => (
                     <div key={i} className="p-4 border border-neutral-200 dark:border-neutral-800 rounded-xl space-y-3">
                       <div className="flex items-start justify-between gap-4">
                         <p className="font-medium text-black dark:text-white flex-1">{q.question}</p>
@@ -467,13 +357,13 @@ export default function InterviewPrepPage() {
                 <div className="flex items-center gap-3">
                   <MessageSquare className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
                   <h2 className="text-xl font-medium text-black dark:text-white">Behavioral Questions</h2>
-                  <span className="text-sm text-neutral-500">({prepMaterial.behavioralQuestions.length})</span>
+                  <span className="text-sm text-neutral-500">({prepMaterial.material.behavioralQuestions.length})</span>
                 </div>
                 {expandedSections.has('behavioral') ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
               </button>
               {expandedSections.has('behavioral') && (
                 <div className="p-6 space-y-4">
-                  {prepMaterial.behavioralQuestions.map((q: any, i: number) => (
+                  {prepMaterial.material.behavioralQuestions.map((q: any, i: number) => (
                     <div key={i} className="p-4 border border-neutral-200 dark:border-neutral-800 rounded-xl space-y-3">
                       <p className="font-medium text-black dark:text-white">{q.question}</p>
                       <div className="flex items-center gap-2">
@@ -507,13 +397,13 @@ export default function InterviewPrepPage() {
                 <div className="flex items-center gap-3">
                   <BookOpen className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
                   <h2 className="text-xl font-medium text-black dark:text-white">Study Guide</h2>
-                  <span className="text-sm text-neutral-500">({prepMaterial.studyGuide.length} topics)</span>
+                  <span className="text-sm text-neutral-500">({prepMaterial.material.studyGuide.length} topics)</span>
                 </div>
                 {expandedSections.has('study') ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
               </button>
               {expandedSections.has('study') && (
                 <div className="p-6 space-y-4">
-                  {prepMaterial.studyGuide.map((item: any, i: number) => (
+                  {prepMaterial.material.studyGuide.map((item: any, i: number) => (
                     <div key={i} className="p-4 border border-neutral-200 dark:border-neutral-800 rounded-xl space-y-3">
                       <div className="flex items-start justify-between gap-4">
                         <h3 className="font-medium text-black dark:text-white">{item.topic}</h3>
@@ -552,7 +442,6 @@ export default function InterviewPrepPage() {
                 onClick={() => {
                   setStep(1);
                   setPrepMaterial(null);
-                  setCompany('');
                   setRole('');
                   setTechnologies('');
                 }}
@@ -562,7 +451,8 @@ export default function InterviewPrepPage() {
             </div>
           </div>
         )}
-      </div>
+        </div>
+      </main>
       <div className="noise-overlay" />
     </div>
   );

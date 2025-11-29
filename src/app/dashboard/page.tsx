@@ -1,22 +1,17 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { useUserStats, useInterviewPreps, useResume } from '@/lib/supabase/hooks';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Settings, LayoutGrid, Loader2, Bell, Search, Plus, FileText, Briefcase, Target, TrendingUp, Brain, Upload, Download, ExternalLink, MoreHorizontal, ChevronRight } from 'lucide-react';
+import { LogOut, Settings, LayoutGrid, Loader2, Bell, Search, Plus, FileText, Briefcase, Target, TrendingUp, Brain, Upload, ChevronRight } from 'lucide-react';
 import { GridPattern } from '@/components/Doodles';
 import gsap from 'gsap';
 
 export default function DashboardPage() {
   const { user, isLoading, logout } = useAuth();
-  const { stats: userStats, loading: statsLoading } = useUserStats();
-  const { preps: interviewPreps } = useInterviewPreps();
-  const { resume } = useResume();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -54,55 +49,10 @@ export default function DashboardPage() {
   };
 
   const stats = [
-    { label: 'Jobs Matched', value: userStats.jobsMatched.toString(), change: '+0', icon: Briefcase, color: 'bg-blue-500' },
-    { label: 'Applications', value: userStats.applications.toString(), change: '+0', icon: FileText, color: 'bg-purple-500' },
-    { label: 'Interview Preps', value: userStats.interviews.toString(), change: '+0', icon: Target, color: 'bg-green-500' },
-    { label: 'Skill Score', value: userStats.skillScore ? `${userStats.skillScore}%` : '0%', change: '+0', icon: TrendingUp, color: 'bg-orange-500' },
-  ];
-
-  const matchedJobs = [
-    { 
-      title: 'Frontend Developer', 
-      company: 'TechCorp', 
-      location: 'Remote', 
-      match: 95, 
-      salary: '$80k-$120k',
-      posted: '2 days ago',
-      tags: ['React', 'TypeScript', 'Next.js']
-    },
-    { 
-      title: 'Full Stack Engineer', 
-      company: 'StartupXYZ', 
-      location: 'San Francisco', 
-      match: 92, 
-      salary: '$100k-$150k',
-      posted: '1 week ago',
-      tags: ['Node.js', 'React', 'MongoDB']
-    },
-    { 
-      title: 'Software Engineer Intern', 
-      company: 'BigTech Inc', 
-      location: 'New York', 
-      match: 88, 
-      salary: '$40/hr',
-      posted: '3 days ago',
-      tags: ['Python', 'Java', 'AWS']
-    },
-  ];
-
-  // Format interview preps for display
-  const formattedPreps = interviewPreps.slice(0, 2).map((prep: any) => ({
-    role: prep.role,
-    company: prep.company,
-    status: 'Ready',
-    questions: prep.prep_material?.technicalQuestions?.length + prep.prep_material?.behavioralQuestions?.length || 0,
-    lastUpdated: new Date(prep.created_at).toLocaleDateString(),
-  }));
-
-  const skillGaps = [
-    { skill: 'System Design', current: 65, target: 85 },
-    { skill: 'Data Structures', current: 80, target: 90 },
-    { skill: 'React Advanced', current: 75, target: 90 },
+    { label: 'Jobs Matched', value: '0', change: '+0', icon: Briefcase, color: 'bg-blue-500' },
+    { label: 'Applications', value: '0', change: '+0', icon: FileText, color: 'bg-purple-500' },
+    { label: 'Interviews', value: '0', change: '+0', icon: Target, color: 'bg-green-500' },
+    { label: 'Skill Score', value: '0%', change: '+0%', icon: TrendingUp, color: 'bg-orange-500' },
   ];
 
   return (
@@ -120,21 +70,17 @@ export default function DashboardPage() {
 
         <nav className="flex-1 space-y-1">
           {[
-            { icon: LayoutGrid, label: 'Overview', id: 'overview' },
-            { icon: FileText, label: 'Resume', id: 'resume' },
-            { icon: Briefcase, label: 'Job Matches', id: 'jobs' },
-            { icon: Target, label: 'Interview Prep', id: 'prep' },
-            { icon: TrendingUp, label: 'Analytics', id: 'analytics' },
-            { icon: Settings, label: 'Settings', id: 'settings' },
+            { icon: LayoutGrid, label: 'Overview', href: '/dashboard' },
+            { icon: FileText, label: 'Resume', href: '/dashboard/upload-resume' },
+            { icon: Briefcase, label: 'Job Matches', href: '/dashboard/jobs' },
+            { icon: Target, label: 'Interview Prep', href: '/dashboard/interview-prep' },
+            { icon: TrendingUp, label: 'Analytics', href: '/dashboard/analytics' },
+            { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
           ].map((item) => (
             <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`dash-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                activeTab === item.id
-                  ? 'bg-black dark:bg-white text-white dark:text-black'
-                  : 'text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-900 hover:text-black dark:hover:text-white'
-              }`}
+              key={item.href}
+              onClick={() => router.push(item.href)}
+              className="dash-item w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-900 hover:text-black dark:hover:text-white"
             >
               <item.icon className="w-5 h-5" />
               <span className="text-sm font-medium">{item.label}</span>
@@ -231,126 +177,6 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          {/* Main Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Matched Jobs */}
-            <div className="lg:col-span-2 card-item bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
-              <div className="p-6 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-medium text-black dark:text-white">Top Job Matches</h2>
-                  <p className="text-sm text-neutral-500">AI-curated opportunities for you</p>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-neutral-500"
-                  onClick={() => setActiveTab('jobs')}
-                >
-                  View All <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
-              </div>
-              <div className="divide-y divide-neutral-200 dark:divide-neutral-800">
-                {matchedJobs.map((job) => (
-                  <div key={job.title + job.company} className="p-6 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors cursor-pointer group">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <h3 className="text-base font-medium text-black dark:text-white group-hover:underline mb-1">{job.title}</h3>
-                        <p className="text-sm text-neutral-500">{job.company} • {job.location}</p>
-                      </div>
-                      <div className="flex flex-col items-end gap-2">
-                        <span className="text-xs font-mono bg-green-100 dark:bg-green-950 text-green-600 dark:text-green-400 px-3 py-1 rounded-full">
-                          {job.match}% Match
-                        </span>
-                        <button className="opacity-0 group-hover:opacity-100 transition-opacity">
-                          <ExternalLink className="w-4 h-4 text-neutral-400" />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 mb-3">
-                      {job.tags.map((tag) => (
-                        <span key={tag} className="text-xs px-2 py-1 bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 rounded">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="flex items-center justify-between text-xs text-neutral-400">
-                      <span>{job.salary}</span>
-                      <span>{job.posted}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Interview Prep */}
-            <div className="card-item bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
-              <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
-                <h2 className="text-lg font-medium text-black dark:text-white">Interview Prep</h2>
-                <p className="text-sm text-neutral-500">Your preparation materials</p>
-              </div>
-              <div className="p-6 space-y-4">
-                {formattedPreps.length > 0 ? formattedPreps.map((prep: any, index: number) => (
-                  <div key={prep.role + prep.company + index} className="p-4 border border-neutral-200 dark:border-neutral-800 rounded-xl hover-lift cursor-pointer group">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-black dark:text-white group-hover:underline">{prep.role}</p>
-                        <p className="text-xs text-neutral-500">{prep.company}</p>
-                      </div>
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        prep.status === 'Ready' 
-                          ? 'bg-green-100 dark:bg-green-950 text-green-600 dark:text-green-400'
-                          : 'bg-yellow-100 dark:bg-yellow-950 text-yellow-600 dark:text-yellow-400'
-                      }`}>
-                        {prep.status}
-                      </span>
-                    </div>
-                    <p className="text-xs text-neutral-400 mb-2">{prep.questions} questions • {prep.lastUpdated}</p>
-                    <Button size="sm" variant="outline" className="w-full text-xs h-8">
-                      Start Prep
-                    </Button>
-                  </div>
-                )) : (
-                  <p className="text-sm text-neutral-500 text-center py-4">No interview preps yet</p>
-                )}
-                <Button 
-                  className="w-full bg-black dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200"
-                  onClick={() => router.push('/dashboard/interview-prep')}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  New Prep Session
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Skill Gaps */}
-          <div className="card-item bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden">
-            <div className="p-6 border-b border-neutral-200 dark:border-neutral-800">
-              <h2 className="text-lg font-medium text-black dark:text-white">Skill Gap Analysis</h2>
-              <p className="text-sm text-neutral-500">Areas to focus on for your target roles</p>
-            </div>
-            <div className="p-6 space-y-6">
-              {skillGaps.map((skill) => (
-                <div key={skill.skill}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-black dark:text-white">{skill.skill}</span>
-                    <span className="text-xs text-neutral-500">{skill.current}% / {skill.target}%</span>
-                  </div>
-                  <div className="relative h-2 bg-neutral-100 dark:bg-neutral-900 rounded-full overflow-hidden">
-                    <div 
-                      className="absolute left-0 top-0 h-full bg-black dark:bg-white rounded-full transition-all"
-                      style={{ width: `${skill.current}%` }}
-                    />
-                    <div 
-                      className="absolute top-0 h-full w-px bg-green-500"
-                      style={{ left: `${skill.target}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Quick Actions */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <button 
@@ -360,14 +186,16 @@ export default function DashboardPage() {
               <Upload className="w-8 h-8 text-neutral-400 group-hover:text-black dark:group-hover:text-white transition-colors mb-3" />
               <h3 className="text-base font-medium text-black dark:text-white mb-1">Upload Resume</h3>
               <p className="text-sm text-neutral-500">Update your profile with latest resume</p>
+              <ChevronRight className="w-5 h-5 text-neutral-400 mt-2" />
             </button>
             <button 
-              onClick={() => setActiveTab('jobs')}
+              onClick={() => router.push('/dashboard/jobs')}
               className="card-item p-6 bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-2xl hover-lift text-left group"
             >
               <Search className="w-8 h-8 text-neutral-400 group-hover:text-black dark:group-hover:text-white transition-colors mb-3" />
               <h3 className="text-base font-medium text-black dark:text-white mb-1">Discover Jobs</h3>
               <p className="text-sm text-neutral-500">Browse AI-matched opportunities</p>
+              <ChevronRight className="w-5 h-5 text-neutral-400 mt-2" />
             </button>
             <button 
               onClick={() => router.push('/dashboard/interview-prep')}
@@ -376,7 +204,45 @@ export default function DashboardPage() {
               <Target className="w-8 h-8 text-neutral-400 group-hover:text-black dark:group-hover:text-white transition-colors mb-3" />
               <h3 className="text-base font-medium text-black dark:text-white mb-1">Prep Interview</h3>
               <p className="text-sm text-neutral-500">Get personalized practice questions</p>
+              <ChevronRight className="w-5 h-5 text-neutral-400 mt-2" />
             </button>
+          </div>
+
+          {/* Getting Started */}
+          <div className="card-item bg-gradient-to-br from-black to-neutral-800 dark:from-white dark:to-neutral-200 rounded-2xl p-8 text-white dark:text-black">
+            <h2 className="text-2xl font-light mb-4">Get Started with CareerAI</h2>
+            <p className="text-white/80 dark:text-black/80 mb-6">
+              Follow these steps to maximize your job search success
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-white/20 dark:bg-black/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-sm font-medium">1</span>
+                </div>
+                <div>
+                  <p className="font-medium mb-1">Upload Your Resume</p>
+                  <p className="text-sm text-white/70 dark:text-black/70">Let AI analyze your skills and experience</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-white/20 dark:bg-black/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-sm font-medium">2</span>
+                </div>
+                <div>
+                  <p className="font-medium mb-1">Discover Jobs</p>
+                  <p className="text-sm text-white/70 dark:text-black/70">Get personalized job recommendations</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-white/20 dark:bg-black/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-sm font-medium">3</span>
+                </div>
+                <div>
+                  <p className="font-medium mb-1">Prepare for Interviews</p>
+                  <p className="text-sm text-white/70 dark:text-black/70">Practice with AI-generated questions</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </main>

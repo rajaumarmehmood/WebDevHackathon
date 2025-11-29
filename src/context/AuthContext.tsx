@@ -1,150 +1,91 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { User, Session } from '@supabase/supabase-js';
+import Cookies from 'js-cookie';
 
-interface UserProfile {
+interface User {
   id: string;
   email: string;
   name: string;
 }
 
 interface AuthContextType {
-  user: UserProfile | null;
+  user: User | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signup: (email: string, name: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  logout: () => Promise<void>;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const supabase = createClient();
 
   useEffect(() => {
-    // Get initial session
-    const getInitialSession = async () => {
+    const token = Cookies.get('auth-token');
+    const userData = Cookies.get('user-data');
+    if (token && userData) {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          await fetchUserProfile(session.user.id);
-        }
-      } catch (error) {
-        console.error('Error getting session:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    getInitialSession();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event: string, session: any) => {
-        if (event === 'SIGNED_IN' && session?.user) {
-          await fetchUserProfile(session.user.id);
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null);
-        }
-      }
-    );
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, email, name')
-        .eq('id', userId)
-        .single();
-
-      if (error) throw error;
-      setUser(data);
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-      // Fallback to auth user data
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (authUser) {
-        setUser({
-          id: authUser.id,
-          email: authUser.email || '',
-          name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User',
-        });
+        setUser(JSON.parse(userData));
+      } catch {
+        Cookies.remove('auth-token');
+        Cookies.remove('user-data');
       }
     }
-  };
+    setIsLoading(false);
+  }, []);
 
   const login = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
       });
 
-      if (error) {
-        return { success: false, error: error.message };
+      const data = await res.json();
+
+      if (!res.ok) {
+        return { success: false, error: data.error };
       }
 
-      if (data.user) {
-        await fetchUserProfile(data.user.id);
-      }
-
+      Cookies.set('auth-token', data.token, { expires: 7 });
+      Cookies.set('user-data', JSON.stringify(data.user), { expires: 7 });
+      setUser(data.user);
       return { success: true };
-    } catch (error) {
+    } catch {
       return { success: false, error: 'Network error' };
     }
   };
 
   const signup = async (email: string, name: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name,
-          },
-        },
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name, password }),
       });
 
-      if (error) {
-        return { success: false, error: error.message };
+      const data = await res.json();
+
+      if (!res.ok) {
+        return { success: false, error: data.error };
       }
 
-      if (data.user) {
-        // Create profile in profiles table
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: data.user.id,
-            email,
-            name,
-          });
-
-        if (profileError) {
-          console.error('Error creating profile:', profileError);
-        }
-
-        // Don't set user here - they need to confirm email first
-        // User will be set after they confirm and log in
-      }
-
+      Cookies.set('auth-token', data.token, { expires: 7 });
+      Cookies.set('user-data', JSON.stringify(data.user), { expires: 7 });
+      setUser(data.user);
       return { success: true };
-    } catch (error) {
+    } catch {
       return { success: false, error: 'Network error' };
     }
   };
 
-  const logout = async () => {
-    await supabase.auth.signOut();
+  const logout = () => {
+    Cookies.remove('auth-token');
+    Cookies.remove('user-data');
     setUser(null);
   };
 
